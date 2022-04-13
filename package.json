@@ -1,0 +1,35 @@
+{
+  "type": "module",
+  "name": "reviewpot-node-server",
+  "version": "1.0.0",
+  "description": "Back end for the web application ReviewSpot implemented in Node.js.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ReviewSpot/reviewpot-node-server.git"
+  },
+  "keywords": [
+    "server",
+    "backend",
+    "http",
+    "RESTful"
+  ],
+  "contributors": [
+    { "name": "Jackson Williams" },
+    { "name": "Eli MacColl" }
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ReviewSpot/reviewpot-node-server/issues"
+  },
+  "homepage": "https://github.com/ReviewSpot/reviewpot-node-server#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "express": "^4.17.3",
+    "express-session": "^1.17.2",
+    "mongoose": "^6.2.10"
+  }
+}
