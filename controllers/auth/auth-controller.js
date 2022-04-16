@@ -4,9 +4,23 @@ import { User } from "../../models/user.js";
 // TODO: Error(s) sent is handled the same way in all instances. Let's abstract it into its
 // own function.
 
+export const logout = async (req, res) => {
+    if (!req.session.loggedIn) {
+        res.status(400);
+        res.json({
+            errors: ["Logout failed; no user is currently logged in."],
+        });
+    }
+
+    await req.session.destroy();
+    res.sendStatus(200);
+};
+
 export const login = async (req, res) => {
     // TODO: Implement banning.
-    // TODO: Add sesion logic.
+    if (req.session.loggedIn) {
+        res.sendStatus(200);
+    }
     if (req.body && (!req.body.username || !req.body.password)) {
         res.sendStatus(400);
         return;
@@ -31,17 +45,22 @@ export const login = async (req, res) => {
 
     if (!correctPassword) {
         res.status(400);
-        res.json(error);
+        res.json({
+            errors: ["The password provided was incorrect. Please try again."],
+        });
         return;
     }
 
-    res.json({ username: userToLogIn.username, role: userToLogIn.role });
-    res.status(200);
-
+    // Need to know if a user is logged in for authorized features.
+    // Similarly, we should store the current user's username so we can easily
+    // check aspects of their account (e.g., role).
+    req.session.loggedIn = true;
+    req.session.username = userToLogIn.username;
     await req.session.save();
+
+    res.sendStatus(200);
 };
 
-// TODO: Implement forgot password.
 export const signUp = async (req, res) => {
     if (req.body && (!req.body.username || !req.body.password)) {
         res.sendStatus(400);
@@ -70,6 +89,11 @@ export const signUp = async (req, res) => {
 
     // TODO: Good way to handle a potential error here?
     await newUser.save();
+
+    req.session.loggedIn = true;
+    req.session.username = newUser.username;
+    await req.session.save();
+
     res.json({ username: newUser.username });
     res.status(200);
 };
