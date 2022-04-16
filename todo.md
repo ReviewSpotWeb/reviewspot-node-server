@@ -7,9 +7,9 @@
 
 -   **Users and Authentication**
 
-    -   Signing Up
-    -   Logging In
-    -   Session (and Session Store)
+    -   ~Signing Up~
+    -   ~Logging In~
+    -   ~Session (and Session Store)~
     -   User Roles and Authorized Routes
     -   Banned Users
     -   Forgot Password
