@@ -37,6 +37,8 @@ export const login = async (req, res) => {
 
     res.json({ username: userToLogIn.username, role: userToLogIn.role });
     res.status(200);
+
+    await req.session.save();
 };
 
 // TODO: Implement forgot password.
