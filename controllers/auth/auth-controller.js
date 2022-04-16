@@ -1,10 +1,46 @@
-import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { User } from "../../models/user.js";
 
-export const login = null; //TODO: Implement.
+// TODO: Error(s) sent is handled the same way in all instances. Let's abstract it into its
+// own function.
+
+export const login = async (req, res) => {
+    // TODO: Implement banning.
+    // TODO: Add sesion logic.
+    if (req.body && (!req.body.username || !req.body.password)) {
+        res.sendStatus(400);
+        return;
+    }
+
+    const userToLogIn = await User.findOne({ username: req.body.username });
+    if (!userToLogIn) {
+        res.status(400);
+        res.json({
+            errors: [
+                "A user with that username was not found. Please try again with the correct username.",
+            ],
+        });
+        return;
+    }
+
+    const userPasswordHash = userToLogIn.password;
+    const correctPassword = await bcrypt.compare(
+        req.body.password,
+        userPasswordHash
+    );
+
+    if (!correctPassword) {
+        res.status(400);
+        res.json(error);
+        return;
+    }
+
+    res.json({ username: userToLogIn.username, role: userToLogIn.role });
+    res.status(200);
+};
+
+// TODO: Implement forgot password.
 export const signUp = async (req, res) => {
-    console.log(req.body);
     if (req.body && (!req.body.username || !req.body.password)) {
         res.sendStatus(400);
         return;
@@ -14,7 +50,7 @@ export const signUp = async (req, res) => {
     if (usernameTaken) {
         res.json({
             errors: [
-                "Username has already been taken. Please write another one.",
+                "This username has already been taken. Please choose another one.",
             ],
         });
         res.status(400);

@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.js";
 const app = express();
 db.on("error", () => console.error("Could not connect to the database."));
 
+// TODO: Add express-session and other aspects of its logic.
 // Middleware Setup
 app.use(express.json());
 
