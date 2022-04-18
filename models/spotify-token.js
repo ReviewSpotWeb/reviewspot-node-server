@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import { Schema } from "mongoose";
+const { Schema } = mongoose;
 
 const spotifyTokenSchema = new Schema({
     expiresAt: Date,
-    access_token: String,
-    token_type: String,
+    accessToken: String,
+    tokenType: String,
 });
 
 export const SpotifyToken = mongoose.model("SpotifyToken", spotifyTokenSchema);
