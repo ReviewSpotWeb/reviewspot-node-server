@@ -11,6 +11,6 @@ This project is for a Computer Science course in which myself and my partner Eli
 
 **While I would love to accept help from others, we cannot do so until this semester ends on 5/7.**
 
-Furthermore, it is entirely possible we will archive this repository (and subsequent ones) at the end of this semester such that we can allocate our time.
+Furthermore, it is entirely possible we will archive this repository (and subsequent ones) at the end of this semester such that we can allocate our time towards other projects.
 
 We appreciate your enthusiasm, and will update the documentation in this repository if the time comes to open it up to outside contributors.
