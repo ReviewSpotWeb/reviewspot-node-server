@@ -18,6 +18,7 @@ export const logout = async (req, res) => {
 
 export const login = async (req, res) => {
     // TODO: Implement banning.
+    console.log(req.session);
     if (req.session.loggedIn) {
         res.sendStatus(200);
     }
@@ -26,7 +27,14 @@ export const login = async (req, res) => {
         return;
     }
 
-    const userToLogIn = await User.findOne({ username: req.body.username });
+    try {
+        const userToLogIn = await User.findOne({ username: req.body.username });
+    } catch (error) {
+        res.status(500);
+        res.json({ errors: [error.message] });
+        return;
+    }
+
     if (!userToLogIn) {
         res.status(400);
         res.json({
@@ -54,8 +62,7 @@ export const login = async (req, res) => {
     // Need to know if a user is logged in for authorized features.
     // Similarly, we should store the current user's username so we can easily
     // check aspects of their account (e.g., role).
-    req.session.loggedIn = true;
-    req.session.username = userToLogIn.username;
+    req.session.currentUserID = userToLogIn._id;
     await req.session.save();
 
     res.sendStatus(200);
@@ -78,20 +85,35 @@ export const signUp = async (req, res) => {
         return;
     }
 
-    const saltRounds = 10;
-    const salt = await bcrypt.genSalt(saltRounds);
-    const passwordHash = await bcrypt.hashSync(req.body.password, salt);
+    try {
+        const saltRounds = 10;
+        const salt = await bcrypt.genSalt(saltRounds);
+        const passwordHash = await bcrypt.hashSync(req.body.password, salt);
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "Error processing the given password. Please reach out to a site contributer.",
+            ],
+        });
+        return;
+    }
 
-    const newUser = new User({
-        username: req.body.username,
-        password: passwordHash,
-    });
+    try {
+        const newUser = new User({
+            username: req.body.username,
+            password: passwordHash,
+        });
+        await newUser.save();
+    } catch (error) {
+        req.json({
+            errors: [
+                "Could not create a User with the given information. Please contact a site contributor. ",
+            ],
+        });
+    }
 
-    // TODO: Good way to handle a potential error here?
-    await newUser.save();
-
-    req.session.loggedIn = true;
-    req.session.username = newUser.username;
+    req.session.currentUserID = newUser._id;
     await req.session.save();
 
     res.json({ username: newUser.username });

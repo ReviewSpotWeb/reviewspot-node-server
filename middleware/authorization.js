@@ -1,7 +1,7 @@
 import { User } from "../models/user";
 
 export const userMustBeLoggedIn = (req, res, next) => {
-    if (!req.session.loggedIn) {
+    if (!req.session.currentUserID) {
         res.status(401);
         res.json({
             errors: [
@@ -16,7 +16,7 @@ export const userMustBeLoggedIn = (req, res, next) => {
 // NOTE: This middleware assumes that routes have confirmation that the user is logged in.
 export const userMustBeAModerator = (req, res, next) => {
     // TODO: Can we abstract this to a global function?
-    const currentUser = User.findOne({ username: req.session.username });
+    const currentUser = User.findOne({ username: req.session.currentUserID });
     if (currentUser.role != "moderator") {
         res.status(403);
         res.json({
