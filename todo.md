@@ -10,22 +10,30 @@
     -   ~Signing Up~
     -   ~Logging In~
     -   ~Session (and Session Store)~
-    -   User Roles and Authorized Routes
+    -   ~User Roles and Authorized Routes~
     -   Banned Users
     -   Forgot Password
 
 -   **Spotify API**
 
     -   Searching for albums
-    -   Getting album by ID
+    -   ~Getting album by ID~
 
 -   **Reviews**
+
     -   Add CRUD for Reviews
     -   Add CRUD for Ratings
     -   Add CRUD for Comments
     -   Find Reviews by Album
         -   DB index?
-    -   Pagination (may actually be a front end thing)
+    -   Pagination (~may actually be a front end thing~ -- it's both)
+
+-   **Moderators**
+    -   Ability to ban a user.
+    -   See reports. A `Report` contains a reason and content, and is one of a:
+        -   `CommentReport`
+        -   `ReviewReport`
+    -   Ban Audits -- objects to log why a user has been banned.
 
 ## Enhancements/Tech Debt:
 
