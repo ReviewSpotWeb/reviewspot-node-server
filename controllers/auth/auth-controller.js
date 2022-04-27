@@ -12,8 +12,12 @@ export const logout = async (req, res) => {
         });
     }
 
-    await req.session.destroy();
-    res.sendStatus(200);
+    try {
+        await req.session.destroy();
+        res.status(200);
+    } catch (error) {
+        res.status(500);
+    }
 };
 
 export const login = async (req, res) => {
@@ -62,10 +66,23 @@ export const login = async (req, res) => {
     // Need to know if a user is logged in for authorized features.
     // Similarly, we should store the current user's username so we can easily
     // check aspects of their account (e.g., role).
-    req.session.currentUserID = userToLogIn._id;
-    await req.session.save();
+    try {
+        req.session.currentUser = userToLogIn;
+        await req.session.save();
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "Could not properly save the user session. Please try again or contact a site contributor.",
+            ],
+        });
+    }
 
-    res.sendStatus(200);
+    res.status(200);
+    res.json({
+        username: userToLogIn.username,
+        role: userToLogIn.role,
+    });
 };
 
 export const signUp = async (req, res) => {
@@ -106,16 +123,28 @@ export const signUp = async (req, res) => {
         });
         await newUser.save();
     } catch (error) {
-        req.json({
+        res.status(500);
+        res.json({
             errors: [
                 "Could not create a User with the given information. Please contact a site contributor. ",
             ],
         });
+        return;
     }
 
-    req.session.currentUserID = newUser._id;
-    await req.session.save();
+    try {
+        req.session.currentUser = newUser;
+        await req.session.save();
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "Could not properly save your session. Please contact a site contributor.",
+            ],
+        });
+        return;
+    }
 
-    res.json({ username: newUser.username });
+    res.json({ username: newUser.username, role: newUser.role });
     res.status(200);
 };
