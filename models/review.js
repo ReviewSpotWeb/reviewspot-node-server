@@ -4,14 +4,21 @@ import { Comment } from "./comment";
 const { Schema } = mongoose;
 
 const reviewSchema = new Schema({
-    author: mongoose.ObjectId,
-    albumID: String,
-    likedBy: [mongoose.ObjectId],
+    author: {
+        type: mongoose.ObjectId, // User
+        required: true,
+    },
+    albumID: {
+        type: String,
+        required: true,
+    },
+    likedBy: {
+        type: [mongoose.ObjectId], // User
+        required: true,
+        default: [],
+    },
     comments: {
         type: [Comment],
-        // This is so that we don't have to initialize
-        // a list, and can just simply append a comment
-        // without checking that it exists.
         required: true,
         default: [],
     },
