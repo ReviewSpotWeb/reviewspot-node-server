@@ -30,6 +30,7 @@ app.use(
 );
 
 app.use(express.json());
+db.on("error", () => console.error("Could not connect to the database."));
 
 // Setting Up Routes
 app.use("/api/v1/auth", authRoutes);
