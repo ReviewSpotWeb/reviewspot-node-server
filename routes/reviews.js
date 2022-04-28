@@ -24,7 +24,11 @@ reviewRoutes.post(
 );
 
 // CRUD for liking a review.
-reviewRoutes.post("/album/:albumId/review/:id/like", (req, res) => {});
+reviewRoutes.post(
+    "/album/:albumId/review/:id/like",
+    userMustBeLoggedIn,
+    (req, res) => {}
+);
 
 // CRUD for comments.
 reviewRoutes.post(

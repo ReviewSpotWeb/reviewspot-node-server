@@ -11,6 +11,9 @@
     -   ~Logging In~
     -   ~Session (and Session Store)~
     -   ~User Roles and Authorized Routes~
+    -   Profiles
+        -   Route is something along the lines of api.../user/:id
+        -   Users should be able to do a PUT to their profile.
     -   Banned Users
     -   Forgot Password
 

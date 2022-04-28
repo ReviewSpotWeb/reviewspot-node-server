@@ -40,13 +40,16 @@ export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
     };
     const [data, error] = await getAlbumData(searchRequestOptions);
     if (error) return null, error;
+    const albumData = data.albums;
 
     // https://developer.spotify.com/documentation/web-api/reference/#/operations/search
-    const [total, nextURL, prevURL, albums] = [
-        data.total,
-        data.next,
-        data.prev,
-        data.albums.items,
+    const [total, nextURL, prevURL, albums, offset, limit] = [
+        albumData.total,
+        albumData.next,
+        albumData.prev,
+        albumData.items,
+        albumData.offset,
+        albumData.limit,
     ];
-    return { total, nextURL, prevURL, albums }, null;
+    return { total, nextURL, prevURL, albums, offset, limit }, null;
 };

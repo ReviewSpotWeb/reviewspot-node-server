@@ -18,6 +18,7 @@ const userSchema = new Schema({
         enum: ["general", "moderator"],
         default: "general",
     },
+    bio: String,
 });
 
 export const User = mongoose.model("User", userSchema);

@@ -5,7 +5,7 @@ import { User } from "../../models/user.js";
 // own function.
 
 export const logout = async (req, res) => {
-    if (!req.session.loggedIn) {
+    if (!req.session.currentUser) {
         res.status(400);
         res.json({
             errors: ["Logout failed; no user is currently logged in."],
@@ -17,13 +17,18 @@ export const logout = async (req, res) => {
         res.status(200);
     } catch (error) {
         res.status(500);
+        res.json({
+            errors: [
+                "Error destroying the user session. Please contact a site contributor.",
+            ],
+        });
     }
 };
 
 export const login = async (req, res) => {
     // TODO: Implement banning.
     console.log(req.session);
-    if (req.session.loggedIn) {
+    if (req.session.currentUser) {
         res.sendStatus(200);
     }
     if (req.body && (!req.body.username || !req.body.password)) {
