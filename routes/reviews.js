@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { getReview } from "../controllers/reviews-controller.js";
+import { createAReview, getReview } from "../controllers/reviews-controller.js";
 import { userMustBeLoggedIn } from "../middleware/authorization.js";
 const reviewRoutes = Router();
 
 // CRUD for album reviews.
 reviewRoutes.get("/album/:albumId/review/:id", getReview);
-reviewRoutes.post("/album/:id/review", userMustBeLoggedIn, (req, res) => {});
+reviewRoutes.post("/album/:albumId/review", userMustBeLoggedIn, createAReview);
 reviewRoutes.put(
     "/album/:albumId/review/:id",
     userMustBeLoggedIn,
