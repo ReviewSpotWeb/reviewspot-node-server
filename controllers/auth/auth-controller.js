@@ -10,11 +10,12 @@ export const logout = async (req, res) => {
         res.json({
             errors: ["Logout failed; no user is currently logged in."],
         });
+        return;
     }
 
     try {
         await req.session.destroy();
-        res.status(200);
+        res.sendStatus(200);
     } catch (error) {
         res.status(500);
         res.json({
@@ -27,17 +28,24 @@ export const logout = async (req, res) => {
 
 export const login = async (req, res) => {
     // TODO: Implement banning.
-    console.log(req.session);
     if (req.session.currentUser) {
-        res.sendStatus(200);
+        const currentUser = req.session.currentUser;
+        res.status(200);
+        res.json({
+            username: currentUser.username,
+            role: currentUser.role,
+            _id: currentUser._id,
+        });
+        return;
     }
     if (req.body && (!req.body.username || !req.body.password)) {
         res.sendStatus(400);
         return;
     }
 
+    let userToLogIn;
     try {
-        const userToLogIn = await User.findOne({ username: req.body.username });
+        userToLogIn = await User.findOne({ username: req.body.username });
     } catch (error) {
         res.status(500);
         res.json({ errors: [error.message] });
@@ -81,12 +89,14 @@ export const login = async (req, res) => {
                 "Could not properly save the user session. Please try again or contact a site contributor.",
             ],
         });
+        return;
     }
 
     res.status(200);
     res.json({
         username: userToLogIn.username,
         role: userToLogIn.role,
+        _id: userToLogIn._id,
     });
 };
 
@@ -107,10 +117,11 @@ export const signUp = async (req, res) => {
         return;
     }
 
+    let passwordHash;
     try {
         const saltRounds = 10;
         const salt = await bcrypt.genSalt(saltRounds);
-        const passwordHash = await bcrypt.hashSync(req.body.password, salt);
+        passwordHash = await bcrypt.hashSync(req.body.password, salt);
     } catch (error) {
         res.status(500);
         res.json({
@@ -121,8 +132,10 @@ export const signUp = async (req, res) => {
         return;
     }
 
+    // TODO: Combine session/DB write with transaction.
+    let newUser;
     try {
-        const newUser = new User({
+        newUser = new User({
             username: req.body.username,
             password: passwordHash,
         });
@@ -141,6 +154,7 @@ export const signUp = async (req, res) => {
         req.session.currentUser = newUser;
         await req.session.save();
     } catch (error) {
+        console.error(error);
         res.status(500);
         res.json({
             errors: [
@@ -150,6 +164,10 @@ export const signUp = async (req, res) => {
         return;
     }
 
-    res.json({ username: newUser.username, role: newUser.role });
+    res.json({
+        username: newUser.username,
+        role: newUser.role,
+        _id: newUser._id,
+    });
     res.status(200);
 };

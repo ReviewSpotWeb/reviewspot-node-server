@@ -1,5 +1,3 @@
-import axios from "axios";
-import e from "express";
 import { stringify } from "qs";
 import { getDataFromRequest } from "../axios-handlers.js";
 import { getSpotifyToken } from "./spotify-token-service.js";
@@ -43,7 +41,7 @@ export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
     const albumData = data.albums;
 
     // https://developer.spotify.com/documentation/web-api/reference/#/operations/search
-    const [total, nextURL, prevURL, albums, offset, limit] = [
+    const [total, nextURL, prevURL, albums, resOffset, resLimit] = [
         albumData.total,
         albumData.next,
         albumData.prev,
@@ -51,5 +49,5 @@ export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
         albumData.offset,
         albumData.limit,
     ];
-    return { total, nextURL, prevURL, albums, offset, limit }, null;
+    return { total, nextURL, prevURL, albums, resOffset, resLimit }, null;
 };

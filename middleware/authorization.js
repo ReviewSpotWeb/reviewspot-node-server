@@ -1,4 +1,4 @@
-import { User } from "../models/user";
+import { User } from "../models/user.js";
 
 export const userMustBeLoggedIn = (req, res, next) => {
     if (!req.session.currentUser) {

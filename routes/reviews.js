@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { userMustBeLoggedIn } from "../middleware/authorization";
+import { userMustBeLoggedIn } from "../middleware/authorization.js";
 const reviewRoutes = Router();
 
 // CRUD for album reviews.

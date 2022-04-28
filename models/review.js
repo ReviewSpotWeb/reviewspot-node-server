@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { AlbumRating } from "./album-rating";
-import { Comment } from "./comment";
+import { AlbumRating } from "./album-rating.js";
+import { Comment } from "./comment.js";
 const { Schema } = mongoose;
 
 const reviewSchema = new Schema({
@@ -13,16 +13,16 @@ const reviewSchema = new Schema({
         required: true,
     },
     likedBy: {
-        type: [mongoose.ObjectId], // User
+        type: Array, // User
         required: true,
         default: [],
     },
     comments: {
-        type: [Comment],
+        type: Array,
         required: true,
         default: [],
     },
-    rating: AlbumRating,
+    rating: Object,
 });
 
 export const Review = mongoose.model("Review", reviewSchema);
