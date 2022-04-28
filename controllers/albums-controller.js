@@ -9,46 +9,66 @@ import {
 // /api/v1/album/:id
 export const getAlbum = async (req, res) => {
     const albumId = req.params.id;
-    const [album, albumError] = await getAlbumData(albumId);
+    const errorJSON = {
+        errors: [
+            "Could not retrieve this album due to an internal server error. Please try again or" +
+                "contact a site contributor.",
+        ],
+    };
+
+    let [album, albumError] = await getAlbumData(albumId);
+    if (albumError) {
+        res.status(500);
+        res.json(errorJSON);
+        return;
+    }
+
     let rating, ratingError;
     if (req.session.currentUser) {
         const currentUserId = req.session.currentUser._id;
-        rating,
-            (ratingError = ratingDao.findRatingByAlbumIdAndUserId(
-                albumId,
-                currentUserId
-            ));
+        [rating, ratingError] = await ratingDao.findRatingByAlbumIdAndUserId(
+            albumId,
+            currentUserId
+        );
     }
-
-    if (albumError || ratingError) {
+    if (ratingError) {
+        console.error(ratingError);
         res.status(500);
-        res.json({
-            errors: [
-                "Could not retrieve this album due to an internal server error. Please try again or" +
-                    "contact a site contributor.",
-            ],
-        });
+        res.json(errorJSON);
         return;
     }
 
     res.status(200);
-    res.json(rating ? { album, userRating: rating } : { album });
+    if (rating) {
+        console.log(rating);
+        res.json({
+            userRating: rating,
+            album,
+        });
+    } else {
+        res.json({ album });
+    }
 };
 
 // /api/v1/album/:id/reviews
 // JSON body should contain a limit and an offset.
 export const getAlbumReviews = async (req, res) => {
     const albumId = req.params.id;
+
+    // NOTE: Limit should never be 0 so this is fine,
+    // however offset can be 0, and thus a normal
+    // Falsy check will not work here.
     if (
         !req.body.limit ||
-        !req.body.offset ||
+        req.body.offset == null ||
         !validateOffsetAndLimit(req.body.offset, req.body.limit)
     ) {
         res.sendStatus(400);
         return;
     }
 
-    const [reviews, error] = reviewDao.findReviewsByAlbumId(albumId);
+    const { limit, offset } = req.body;
+    const [reviews, error] = await reviewDao.findReviewsByAlbumId(albumId);
     if (error) {
         res.status(500);
         res.json({
@@ -60,7 +80,7 @@ export const getAlbumReviews = async (req, res) => {
         return;
     }
 
-    if (limit * offset >= reviews.length) {
+    if (limit * offset >= reviews.length && offset > 0) {
         res.status(400);
         res.json({
             errors: [
@@ -85,9 +105,9 @@ export const getAlbumReviews = async (req, res) => {
 };
 
 // /api/v1/album/:id/avgRating
-const getAverageRating = async (req, res) => {
+export const getAverageRating = async (req, res) => {
     const albumId = req.params.id;
-    const [ratings, error] = ratingDao.findAllRatingsForAlbumId(albumId);
+    const [ratings, error] = await ratingDao.findAllRatingsForAlbumId(albumId);
     if (error) {
         res.status(500);
         res.json({
@@ -98,8 +118,8 @@ const getAverageRating = async (req, res) => {
         });
         return;
     }
-
-    const sumOfRatings = ratings.reduce((prev, cur) => prev + cur, 0);
+    const values = ratings.map((element) => element.rating);
+    const sumOfRatings = values.reduce((prev, cur) => prev + cur, 0);
     const avgRating = sumOfRatings / ratings.length;
 
     res.status(200);
@@ -109,16 +129,18 @@ const getAverageRating = async (req, res) => {
 };
 
 // /api/v1/album/:id/rate
-const rateAlbum = async (req, res) => {
-    const albumId = req.params.id;
-    if (!req.rating || !req.rater) {
+export const rateAlbum = async (req, res) => {
+    if (!req.body.rating) {
+        console.log(req.body);
         res.sendStatus(400);
         return;
     }
-    const [newRating, error] = ratingDao.createRating(
+    const albumId = req.params.id;
+    const rater = req.session.currentUser._id;
+    const [newRating, error] = await ratingDao.createRating(
         albumId,
-        req.rater,
-        req.rating
+        rater,
+        req.body.rating
     );
 
     if (error) {

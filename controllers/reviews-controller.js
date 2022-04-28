@@ -74,7 +74,7 @@ export const getCommentsForReview = async (req, res) => {
         });
     }
 
-    if (offset * limit >= comments.length) {
+    if (offset * limit >= comments.length && offset != 0) {
         res.status(400);
         res.json({
             errors: [
@@ -95,4 +95,41 @@ export const getCommentsForReview = async (req, res) => {
         prev,
         total: comments.length,
     });
+};
+
+// api/v1/album/:albumId/review
+export const createAReview = async (req, res) => {
+    if (!req.body.content || req.body.content === "") {
+        res.sendStatus(400);
+        return;
+    }
+
+    const albumId = req.params.albumId;
+    const [review, creationError] =
+        req.body.rating != null
+            ? await reviewDao.createReview(
+                  req.session.currentUser._id,
+                  albumId,
+                  req.body.content
+              )
+            : await reviewDao.createReview(
+                  req.session.currentUser._id,
+                  albumId,
+                  req.body.content,
+                  req.body.rating
+              );
+
+    if (creationError) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error was encountered while attempting to create this review." +
+                    "Please try again or contact a site admin.",
+            ],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json(review);
 };

@@ -18,10 +18,10 @@ export const getPageFromModelList = (listOfModel, offset, limit) => {
 
     const startIndex = offset * limit;
     const lastIndexBasedOnOffset = (offset + 1) * limit - 1;
-    const lastIndexOfReviews = listOfModel.length - 1;
+    const lastIndexOfList = listOfModel.length - 1;
     const listSlice =
-        lastIndexBasedOnOffset >= lastIndexOfReviews
-            ? reviews.slice(startIndex)
-            : reviews.slice(startIndex, lastIndexBasedOnOffset);
+        lastIndexBasedOnOffset >= lastIndexOfList
+            ? listOfModel.slice(startIndex)
+            : listOfModel.slice(startIndex, lastIndexBasedOnOffset);
     return { prev, next, listSlice };
 };

@@ -1,21 +1,21 @@
-import { AlbumRating } from "../album-rating";
+import { AlbumRating } from "../album-rating.js";
 
 const findRatingByAlbumIdAndUserId = async (albumId, userId) => {
     try {
-        rating = AlbumRating.findOne({ albumId, rater: userId });
-        return rating, null;
+        const rating = await AlbumRating.findOne({ albumId, rater: userId });
+        return [rating, null];
     } catch (error) {
-        return null, error;
+        return [null, error];
     }
 };
 
 const findAllRatingsForAlbumId = async (albumId) => {
     try {
-        const ratings = AlbumRating.find({ albumId });
-        if (!ratings) return [], error;
-        return ratings, error;
+        const ratings = await AlbumRating.find({ albumId });
+        if (!ratings) return [[], null];
+        return [ratings, null];
     } catch (error) {
-        return null, error;
+        return [null, error];
     }
 };
 
@@ -24,7 +24,8 @@ const createRating = async (albumId, rater, rating) => {
     try {
         const currentRating = await AlbumRating.findOne({ albumId, rater });
         if (currentRating) {
-            await currentRating.remove();
+            await AlbumRating.updateOne({ _id: currentRating._id }, { rating });
+            return [currentRating, null];
         }
         const newRating = new AlbumRating({
             rater,
@@ -32,9 +33,9 @@ const createRating = async (albumId, rater, rating) => {
             albumId,
         });
         await newRating.save();
-        return newRating, null;
+        return [newRating, null];
     } catch (error) {
-        return null, error;
+        return [null, error];
     }
 };
 

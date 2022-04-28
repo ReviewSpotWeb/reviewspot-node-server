@@ -1,27 +1,36 @@
 import mongoose from "mongoose";
+import { albumRatingSchema } from "./album-rating.js";
+import { commentSchema } from "./comment.js";
 const { Schema } = mongoose;
 
-const reviewSchema = new Schema({
+export const reviewSchema = new Schema({
     author: {
-        type: mongoose.ObjectId, // User
+        type: Schema.Types.ObjectId,
+        ref: "User",
         required: true,
     },
-    albumID: {
+    albumId: {
+        type: String,
+        required: true,
+    },
+    content: {
         type: String,
         required: true,
     },
     likedBy: {
-        type: Array, // User
+        type: [Schema.Types.ObjectId], // User
         required: true,
         default: [],
+        ref: "User",
     },
     comments: {
-        type: Array,
+        type: [commentSchema],
         required: true,
         default: [],
+        select: false,
     },
     rating: {
-        type: Object, // See ./album-rating.js
+        type: albumRatingSchema, // See ./album-rating.js
         required: true,
     },
     createdAt: {

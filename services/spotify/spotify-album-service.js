@@ -3,7 +3,8 @@ import { getDataFromRequest } from "../axios-handlers.js";
 import { getSpotifyToken } from "./spotify-token-service.js";
 
 export const getAlbumData = async (albumId) => {
-    const spotifyToken = await getSpotifyToken();
+    const [spotifyToken, tokenError] = await getSpotifyToken();
+    if (tokenError) return [null, tokenError];
     const albumRequestOptions = {
         method: "get",
         url: `https://api.spotify.com/v1/albums/${albumId}`,
@@ -12,7 +13,7 @@ export const getAlbumData = async (albumId) => {
         },
     };
     const [data, error] = await getDataFromRequest(albumRequestOptions);
-    return data, error;
+    return [data, error];
 };
 
 // Limit is the maximum number of resultes to send back.
@@ -22,7 +23,8 @@ export const getAlbumData = async (albumId) => {
 // limit = n, offset = 1.
 
 export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
-    const spotifyToken = await getSpotifyToken();
+    const [spotifyToken, tokenError] = await getSpotifyToken();
+    if (tokenError) return [null, tokenError];
     const searchRequestOptions = {
         method: "get",
         url: `https://api.spotify.com/v1/search/`,
@@ -37,7 +39,7 @@ export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
         },
     };
     const [data, error] = await getAlbumData(searchRequestOptions);
-    if (error) return null, error;
+    if (error) return [null, error];
     const albumData = data.albums;
 
     // https://developer.spotify.com/documentation/web-api/reference/#/operations/search
@@ -49,5 +51,5 @@ export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
         albumData.offset,
         albumData.limit,
     ];
-    return { total, nextURL, prevURL, albums, resOffset, resLimit }, null;
+    return [{ total, nextURL, prevURL, albums, resOffset, resLimit }, null];
 };

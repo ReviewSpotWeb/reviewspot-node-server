@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const commentSchema = new Schema({
+export const commentSchema = new Schema({
     author: {
-        type: mongoose.ObjectId, // User
+        type: Schema.Types.ObjectId,
+        ref: "User",
         required: true,
     },
     // TODO: We should add a max length on the front and back end to prevent resource
