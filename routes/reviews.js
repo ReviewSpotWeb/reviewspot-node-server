@@ -1,9 +1,10 @@
 import { Router } from "express";
+import { getReview } from "../controllers/reviews-controller.js";
 import { userMustBeLoggedIn } from "../middleware/authorization.js";
 const reviewRoutes = Router();
 
 // CRUD for album reviews.
-reviewRoutes.get("/album/:albumId/review/:id", (req, res) => {});
+reviewRoutes.get("/album/:albumId/review/:id", getReview);
 reviewRoutes.post("/album/:id/review", userMustBeLoggedIn, (req, res) => {});
 reviewRoutes.put(
     "/album/:albumId/review/:id",
@@ -30,7 +31,6 @@ reviewRoutes.post(
     (req, res) => {}
 );
 
-// CRUD for comments.
 reviewRoutes.post(
     "/album/:albumId/review/:reviewId/comment",
     userMustBeLoggedIn,

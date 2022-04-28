@@ -19,6 +19,10 @@ const userSchema = new Schema({
         default: "general",
     },
     bio: String,
+    joinedOn: {
+        type: Date,
+        default: Date.now(),
+    },
 });
 
 export const User = mongoose.model("User", userSchema);

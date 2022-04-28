@@ -1,8 +1,5 @@
 import { Router } from "express";
-import {
-    getAlbum,
-    getAlbumReviews,
-} from "../controllers/auth/albums-controller.js";
+import { getAlbum, getAlbumReviews } from "../controllers/albums-controller.js";
 const albumsRouter = Router();
 
 // Albums come from the Spotify API, and thus we can only allow read operations

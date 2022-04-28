@@ -1,11 +1,26 @@
-import reviewDao from "../../models/daos/review-dao.js";
-import { getAlbumData } from "../../services/spotify/spotify-album-service.js";
+import ratingDao from "../models/daos/rating-dao.js";
+import reviewDao from "../models/daos/review-dao.js";
+import { getAlbumData } from "../services/spotify/spotify-album-service.js";
+import {
+    getPageFromModelList,
+    validateOffsetAndLimit,
+} from "../utils/pagination.js";
 
 // /api/v1/album/:id
 export const getAlbum = async (req, res) => {
     const albumId = req.params.id;
-    const [data, error] = await getAlbumData(albumId);
-    if (error) {
+    const [album, albumError] = await getAlbumData(albumId);
+    let rating, ratingError;
+    if (req.session.currentUser) {
+        const currentUserId = req.session.currentUser._id;
+        rating,
+            (ratingError = ratingDao.findRatingByAlbumIdAndUserId(
+                albumId,
+                currentUserId
+            ));
+    }
+
+    if (albumError || ratingError) {
         res.status(500);
         res.json({
             errors: [
@@ -17,7 +32,7 @@ export const getAlbum = async (req, res) => {
     }
 
     res.status(200);
-    res.json(data);
+    res.json(rating ? { album, userRating: rating } : { album });
 };
 
 // /api/v1/album/:id/reviews
@@ -45,7 +60,7 @@ export const getAlbumReviews = async (req, res) => {
         return;
     }
 
-    if (reviews.length < limit * offset) {
+    if (limit * offset >= reviews.length) {
         res.status(400);
         res.json({
             errors: [
@@ -54,26 +69,9 @@ export const getAlbumReviews = async (req, res) => {
         });
     }
 
-    let prev, next;
-    if (offset == 0) {
-        prev = null;
-    } else {
-        prev = { offset: offset - 1, limit };
-    }
-
-    if ((offset + 1) * limit > reviews.length) {
-        next = null;
-    } else {
-        next = { offset: offset + 1, limit };
-    }
-
-    const startIndex = offset * limit;
-    const lastIndexBasedOnOffset = (offset + 1) * limit - 1;
-    const lastIndexOfReviews = reviews.length - 1;
-    const reviewsToSend =
-        lastIndexBasedOnOffset >= lastIndexOfReviews
-            ? reviews.slice(startIndex)
-            : reviews.slice(startIndex, lastIndexBasedOnOffset);
+    const pageData = getPageFromModelList(reviews, offset, limit);
+    const { prev, next } = pageData;
+    const reviewsToSend = pageData.listSlice;
 
     res.status(200);
     res.json({
@@ -86,6 +84,55 @@ export const getAlbumReviews = async (req, res) => {
     });
 };
 
-const validateOffsetAndLimit = (offset, limit) => {
-    return offset >= 0 && limit > 0 && limit <= 50;
+// /api/v1/album/:id/avgRating
+const getAverageRating = async (req, res) => {
+    const albumId = req.params.id;
+    const [ratings, error] = ratingDao.findAllRatingsForAlbumId(albumId);
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error was encountered attempting to retrieve the ratings for this album." +
+                    "Pleas try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
+
+    const sumOfRatings = ratings.reduce((prev, cur) => prev + cur, 0);
+    const avgRating = sumOfRatings / ratings.length;
+
+    res.status(200);
+    res.json({
+        avgRating,
+    });
+};
+
+// /api/v1/album/:id/rate
+const rateAlbum = async (req, res) => {
+    const albumId = req.params.id;
+    if (!req.rating || !req.rater) {
+        res.sendStatus(400);
+        return;
+    }
+    const [newRating, error] = ratingDao.createRating(
+        albumId,
+        req.rater,
+        req.rating
+    );
+
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "Ran into an internal server error trying to create this review." +
+                    "Please try again or contact a sight contributor.",
+            ],
+        });
+    }
+
+    res.status(200);
+    res.json({
+        newRating,
+    });
 };

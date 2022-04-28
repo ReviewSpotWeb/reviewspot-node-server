@@ -3,6 +3,7 @@ const { Schema } = mongoose;
 
 const albumRatingSchema = new Schema({
     rater: { type: mongoose.ObjectId, required: true }, // User
+    albumId: { type: String, required: true },
     rating: {
         type: Number,
         min: 0,

@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { User } from "../../models/user.js";
+import { User } from "../models/user.js";
 
 // TODO: Error(s) sent is handled the same way in all instances. Let's abstract it into its
 // own function.
