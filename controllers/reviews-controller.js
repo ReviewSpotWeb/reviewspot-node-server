@@ -133,3 +133,6 @@ export const createAReview = async (req, res) => {
     res.status(200);
     res.json(review);
 };
+
+// api/v1/album/:albumId/review/:id
+export const deleteAReview = async (req, res) => {};

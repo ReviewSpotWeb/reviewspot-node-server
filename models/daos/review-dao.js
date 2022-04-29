@@ -74,10 +74,31 @@ const userOwnsReview = async (userId, reviewId) => {
     }
 };
 
+const updateAReview = async (reviewId, newContent) => {
+    try {
+        const updatedReview = await Review.findByIdAndUpdate(reviewId, {
+            content: newContent,
+        });
+        return [updatedReview, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
+const deleteAReview = async (reviewId) => {
+    try {
+        await Review.findByIdAndDelete(reviewId);
+        return [true, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
 export default {
     findReviewsByAlbumId,
     findOneReviewById,
     findAllReviewsByUserId,
     createReview,
+    deleteAReview,
     userOwnsReview,
 };
