@@ -1,6 +1,7 @@
 import { AlbumRating } from "../album-rating.js";
 import { Review } from "../review.js";
 import mongoose from "mongoose";
+import { User } from "../user.js";
 const { ObjectId } = mongoose.Types;
 
 // NOTE: Because of the potential data size for a reviews's comments,
@@ -51,8 +52,14 @@ const createReview = async (author, albumId, content, ratingValue = null) => {
                 albumId,
             });
         }
+        const givenUser = await User.findById(author);
+        const authorInfo = {
+            authorId: givenUser._id,
+            authorName: givenUser.username,
+            authorRole: givenUser.role,
+        };
         const newReview = new Review({
-            author,
+            authorInfo,
             albumId,
             content,
             rating: userRating,
@@ -68,7 +75,7 @@ const createReview = async (author, albumId, content, ratingValue = null) => {
 const userOwnsReview = async (userId, reviewId) => {
     try {
         const review = await Review.findById(reviewId);
-        return [userId.equals(review.author), null];
+        return [userId.equals(review.authorInfo.authorId), null];
     } catch (error) {
         return [null, error];
     }

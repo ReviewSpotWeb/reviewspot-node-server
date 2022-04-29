@@ -3,6 +3,7 @@
 // Example: Attempting to GET on /api/v1/album/:id where an id is
 // a non-existent albumId should result in a 404 error.
 
+import mongoose from "mongoose";
 import { Comment } from "../models/comment.js";
 import commentDao from "../models/daos/comment-dao.js";
 import reviewDao from "../models/daos/review-dao.js";
@@ -62,6 +63,15 @@ export const albumIdMustBeValid = async (req, res, next) => {
 export const reviewIdMustBeValid = async (req, res, next) => {
     try {
         const reviewId = req.params.reviewId;
+        const isValid = mongoose.isValidObjectId(reviewId);
+        if (!isValid) {
+            res.status(400);
+            res.json({
+                errors: ["The provided id is not valid."],
+            });
+            return;
+        }
+
         const reviewDoesExist = await Review.exists({ _id: reviewId });
         if (reviewDoesExist) {
             next();
@@ -85,6 +95,15 @@ export const reviewIdMustBeValid = async (req, res, next) => {
 export const commentIdMustBeValid = async (req, res, next) => {
     try {
         const commentId = req.params.commentId;
+        const isValid = mongoose.isValidObjectId(commentId);
+        if (!isValid) {
+            res.status(400);
+            res.json({
+                errors: ["The provided id is not valid."],
+            });
+            return;
+        }
+
         const commentExists = await Comment.exists({ _id: commentId });
         if (commentExists) {
             next();

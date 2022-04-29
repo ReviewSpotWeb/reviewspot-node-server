@@ -5,10 +5,20 @@ const { Schema } = mongoose;
 
 export const reviewSchema = new Schema(
     {
-        author: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
+        authorInfo: {
+            authorId: {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+                required: true,
+            },
+            authorName: {
+                type: String, // User.username
+                required: true,
+            },
+            authorRole: {
+                type: String, // User.role
+                required: true,
+            },
         },
         albumId: {
             type: String,

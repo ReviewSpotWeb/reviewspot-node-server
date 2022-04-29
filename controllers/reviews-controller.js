@@ -171,6 +171,7 @@ export const deleteAReview = async (req, res) => {
         reviewId
     );
     if (error || !successFullyDeleted) {
+        console.log(successFullyDeleted);
         res.status(500);
         res.json({
             errors: [
@@ -186,4 +187,10 @@ export const deleteAReview = async (req, res) => {
 
 // TODO: Should be able to submit a new rating.
 // api/v1/album/:albumId/review/:reviewId
-export const editAReview = async (req, res) => {};
+export const editAReview = async (req, res) => {
+    if (!req.body.rating && !req.body.content) {
+        res.sendStatus(400);
+        return;
+    }
+    // TODO
+};

@@ -3,10 +3,20 @@ const { Schema } = mongoose;
 
 export const commentSchema = new Schema(
     {
-        author: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
+        authorInfo: {
+            authorId: {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+                required: true,
+            },
+            authorName: {
+                type: String, // User.username
+                required: true,
+            },
+            authorRole: {
+                type: String, // User.role
+                required: true,
+            },
         },
         // TODO: We should add a max length on the front and back end to prevent resource
         // consumption as an attack vector.

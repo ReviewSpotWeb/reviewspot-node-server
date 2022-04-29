@@ -81,3 +81,20 @@ export const deleteACommentOnReview = async (req, res) => {
     }
     res.sendStatus(200);
 };
+
+export const getACommentOnReview = async (req, res) => {
+    const commentId = req.params.commentId;
+    const [comment, error] = await commentDao.getAComment(commentId);
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error was encountered while fetching this comment. " +
+                    "Please try again or contact a site contributor.",
+            ],
+        });
+    }
+
+    res.status(200);
+    res.json(comment);
+};

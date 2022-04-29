@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
     deleteACommentOnReview,
     editACommentOnReview,
+    getACommentOnReview,
     postCommentOnReview,
 } from "../controllers/comments-controller.js";
 import {
@@ -18,7 +19,7 @@ import {
     reviewIdMustBeValid,
     userMustOwnComment,
     userMustOwnReview,
-} from "../middleware/resources.js";
+} from "../middleware/general-resources.js";
 const reviewRoutes = Router();
 
 // CRUD for album reviews.
@@ -65,6 +66,14 @@ reviewRoutes.get(
     albumIdMustBeValid,
     reviewIdMustBeValid,
     getCommentsForReview
+);
+
+reviewRoutes.get(
+    "/album/:albumId/review/:reviewId/comment/:commentId",
+    albumIdMustBeValid,
+    reviewIdMustBeValid,
+    commentIdMustBeValid,
+    getACommentOnReview
 );
 
 reviewRoutes.post(
