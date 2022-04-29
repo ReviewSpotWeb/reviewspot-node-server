@@ -183,3 +183,7 @@ export const deleteAReview = async (req, res) => {
 
     res.sendStatus(200);
 };
+
+// TODO: Should be able to submit a new rating.
+// api/v1/album/:albumId/review/:reviewId
+export const editAReview = async (req, res) => {};
