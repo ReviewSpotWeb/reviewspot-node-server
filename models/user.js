@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const userSchema = new Schema({
+export const userSchema = new Schema({
     username: {
         type: String,
         required: true,
@@ -17,6 +17,11 @@ const userSchema = new Schema({
         required: true,
         enum: ["general", "moderator"],
         default: "general",
+    },
+    bio: String,
+    joinedOn: {
+        type: Date,
+        default: Date.now(),
     },
 });
 

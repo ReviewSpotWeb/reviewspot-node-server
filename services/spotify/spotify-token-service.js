@@ -23,7 +23,7 @@ export const getSpotifyToken = async () => {
         // at any time, there should only ever be one token.
         const currentToken = await SpotifyToken.findOne();
         if (currentToken && currentToken.expiresAt > Date.now()) {
-            return currentToken, null;
+            return [currentToken, null];
         } else if (currentToken) {
             await SpotifyToken.deleteOne({ _id: currentToken._id });
         }
@@ -39,7 +39,7 @@ export const getSpotifyToken = async () => {
         };
 
         const [tokenData, error] = await getDataFromRequest(tokenRouteOptions);
-        if (error) return null, error;
+        if (error) return [null, error];
 
         // Expires In is computed as seconds.
         const expiresAt = moment()
@@ -51,8 +51,8 @@ export const getSpotifyToken = async () => {
             tokenType: tokenData["token_type"],
             expiresAt,
         });
-        return newToken, null;
+        return [newToken, null];
     } catch (error) {
-        return null, error;
+        return [null, error];
     }
 };

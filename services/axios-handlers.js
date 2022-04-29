@@ -9,8 +9,8 @@ export const getDataFromRequest = async (requestOptions) => {
     try {
         const response = await axios(requestOptions);
         const data = response.data;
-        return data, null;
+        return [data, null];
     } catch (error) {
-        return null, error;
+        return [null, error];
     }
 };

@@ -1,34 +1,51 @@
 import bcrypt from "bcrypt";
-import { User } from "../../models/user.js";
+import { User } from "../models/user.js";
 
 // TODO: Error(s) sent is handled the same way in all instances. Let's abstract it into its
 // own function.
 
 export const logout = async (req, res) => {
-    if (!req.session.loggedIn) {
+    if (!req.session.currentUser) {
         res.status(400);
         res.json({
             errors: ["Logout failed; no user is currently logged in."],
         });
+        return;
     }
 
-    await req.session.destroy();
-    res.sendStatus(200);
+    try {
+        await req.session.destroy();
+        res.sendStatus(200);
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "Error destroying the user session. Please contact a site contributor.",
+            ],
+        });
+    }
 };
 
 export const login = async (req, res) => {
     // TODO: Implement banning.
-    console.log(req.session);
-    if (req.session.loggedIn) {
-        res.sendStatus(200);
+    if (req.session.currentUser) {
+        const currentUser = req.session.currentUser;
+        res.status(200);
+        res.json({
+            username: currentUser.username,
+            role: currentUser.role,
+            _id: currentUser._id,
+        });
+        return;
     }
     if (req.body && (!req.body.username || !req.body.password)) {
         res.sendStatus(400);
         return;
     }
 
+    let userToLogIn;
     try {
-        const userToLogIn = await User.findOne({ username: req.body.username });
+        userToLogIn = await User.findOne({ username: req.body.username });
     } catch (error) {
         res.status(500);
         res.json({ errors: [error.message] });
@@ -62,10 +79,25 @@ export const login = async (req, res) => {
     // Need to know if a user is logged in for authorized features.
     // Similarly, we should store the current user's username so we can easily
     // check aspects of their account (e.g., role).
-    req.session.currentUserID = userToLogIn._id;
-    await req.session.save();
+    try {
+        req.session.currentUser = userToLogIn;
+        await req.session.save();
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "Could not properly save the user session. Please try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
 
-    res.sendStatus(200);
+    res.status(200);
+    res.json({
+        username: userToLogIn.username,
+        role: userToLogIn.role,
+        _id: userToLogIn._id,
+    });
 };
 
 export const signUp = async (req, res) => {
@@ -85,10 +117,11 @@ export const signUp = async (req, res) => {
         return;
     }
 
+    let passwordHash;
     try {
         const saltRounds = 10;
         const salt = await bcrypt.genSalt(saltRounds);
-        const passwordHash = await bcrypt.hashSync(req.body.password, salt);
+        passwordHash = await bcrypt.hashSync(req.body.password, salt);
     } catch (error) {
         res.status(500);
         res.json({
@@ -99,23 +132,42 @@ export const signUp = async (req, res) => {
         return;
     }
 
+    // TODO: Combine session/DB write with transaction.
+    let newUser;
     try {
-        const newUser = new User({
+        newUser = new User({
             username: req.body.username,
             password: passwordHash,
         });
         await newUser.save();
     } catch (error) {
-        req.json({
+        res.status(500);
+        res.json({
             errors: [
                 "Could not create a User with the given information. Please contact a site contributor. ",
             ],
         });
+        return;
     }
 
-    req.session.currentUserID = newUser._id;
-    await req.session.save();
+    try {
+        req.session.currentUser = newUser;
+        await req.session.save();
+    } catch (error) {
+        console.error(error);
+        res.status(500);
+        res.json({
+            errors: [
+                "Could not properly save your session. Please contact a site contributor.",
+            ],
+        });
+        return;
+    }
 
-    res.json({ username: newUser.username });
+    res.json({
+        username: newUser.username,
+        role: newUser.role,
+        _id: newUser._id,
+    });
     res.status(200);
 };
