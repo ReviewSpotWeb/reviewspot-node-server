@@ -1,6 +1,12 @@
 import { Router } from "express";
 import {
+    deleteACommentOnReview,
+    editACommentOnReview,
+    postCommentOnReview,
+} from "../controllers/comments-controller.js";
+import {
     createAReview,
+    deleteAReview,
     getCommentsForReview,
     getReview,
 } from "../controllers/reviews-controller.js";
@@ -8,6 +14,7 @@ import { userMustBeLoggedIn } from "../middleware/authorization.js";
 import {
     albumIdMustBeValid,
     commentIdMustBeValid,
+    reviewCannotAlreadyExist,
     reviewIdMustBeValid,
     userMustOwnComment,
     userMustOwnReview,
@@ -25,6 +32,7 @@ reviewRoutes.post(
     "/album/:albumId/review",
     userMustBeLoggedIn,
     albumIdMustBeValid,
+    reviewCannotAlreadyExist,
     createAReview
 );
 reviewRoutes.put(
@@ -39,7 +47,8 @@ reviewRoutes.delete(
     userMustBeLoggedIn,
     albumIdMustBeValid,
     reviewIdMustBeValid,
-    userMustOwnReview
+    userMustOwnReview,
+    deleteAReview
 );
 
 // CRUD for liking a review.
@@ -62,7 +71,8 @@ reviewRoutes.post(
     "/album/:albumId/review/:reviewId/comment",
     userMustBeLoggedIn,
     albumIdMustBeValid,
-    reviewIdMustBeValid
+    reviewIdMustBeValid,
+    postCommentOnReview
 );
 
 reviewRoutes.put(
@@ -72,7 +82,7 @@ reviewRoutes.put(
     reviewIdMustBeValid,
     commentIdMustBeValid,
     userMustOwnComment,
-    (req, res) => {}
+    editACommentOnReview
 );
 reviewRoutes.delete(
     "/album/:albumId/review/:reviewId/comment/:commentId",
@@ -81,7 +91,7 @@ reviewRoutes.delete(
     reviewIdMustBeValid,
     commentIdMustBeValid,
     userMustOwnComment,
-    (req, res) => {}
+    deleteACommentOnReview
 );
 
 export default reviewRoutes;

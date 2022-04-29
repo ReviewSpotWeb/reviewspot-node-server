@@ -18,7 +18,14 @@ const createCommentOnReview = async (reviewId, author, content) => {
             content,
         });
         await Review.findByIdAndUpdate(reviewId, {
-            comments: [...comments, newComment],
+            $push: {
+                comments: {
+                    $each: [newComment],
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+            },
         });
         await newComment.save();
         return [newComment, null];
@@ -27,12 +34,21 @@ const createCommentOnReview = async (reviewId, author, content) => {
     }
 };
 
-const editComment = async (commentId, newContent) => {
+// TODO: This should probably be wrapped in a transaction.
+const editComment = async (reviewId, commentId, newContent) => {
     try {
         const updatedComment = await Comment.findByIdAndUpdate(commentId, {
             content: newContent,
-            updatedAt: Date.now(),
         });
+        // https://stackoverflow.com/questions/15691224/mongoose-update-values-in-array-of-objects
+        await Review.updateOne(
+            { _id: reviewId, "comments.id": commentId },
+            {
+                $set: {
+                    "comments.$.content": newContent,
+                },
+            }
+        );
         return [updatedComment, null];
     } catch (error) {
         return [null, error];
@@ -40,10 +56,17 @@ const editComment = async (commentId, newContent) => {
 };
 
 // TODO: Do we need to manually delete a comment from a review?
-const deleteComment = async (commentId) => {
+const deleteComment = async (reviewId, commentId) => {
     try {
-        await Comment.findByIdAndDelete(commentId);
-        return [true, null];
+        await Review.findByIdAndUpdate(reviewId, {
+            $pull: {
+                comments: {
+                    _id: commentId,
+                },
+            },
+        });
+        const deletedComment = await Comment.findByIdAndDelete(commentId);
+        return [deletedComment != null, null];
     } catch (error) {
         return [null, error];
     }
@@ -52,7 +75,7 @@ const deleteComment = async (commentId) => {
 const userOwnsComment = async (userId, commentId) => {
     try {
         const comment = await Comment.findById(commentId);
-        return [comment.author === userId, null];
+        return [comment.author.equals(userId), null];
     } catch (error) {
         return [null, error];
     }

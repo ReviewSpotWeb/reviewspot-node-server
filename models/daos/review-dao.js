@@ -68,7 +68,7 @@ const createReview = async (author, albumId, content, ratingValue = null) => {
 const userOwnsReview = async (userId, reviewId) => {
     try {
         const review = await Review.findById(reviewId);
-        return [userId === review.author, null];
+        return [userId.equals(review.author), null];
     } catch (error) {
         return [null, error];
     }
@@ -87,8 +87,8 @@ const updateReview = async (reviewId, newContent) => {
 
 const deleteAReview = async (reviewId) => {
     try {
-        await Review.findByIdAndDelete(reviewId);
-        return [true, null];
+        const result = await Review.findByIdAndDelete(reviewId);
+        return [result != null, null];
     } catch (error) {
         return [null, error];
     }

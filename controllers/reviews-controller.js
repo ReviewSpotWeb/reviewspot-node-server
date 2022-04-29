@@ -1,3 +1,4 @@
+import { AlbumRating } from "../models/album-rating.js";
 import commentDao from "../models/daos/comment-dao.js";
 import reviewDao from "../models/daos/review-dao.js";
 import { getAlbumData } from "../services/spotify/spotify-album-service.js";
@@ -21,7 +22,7 @@ export const getReview = async (req, res) => {
     }
 
     const reviewId = req.params.reviewId;
-    const [review, reviewError] = reviewDao.findOneReviewById(reviewId);
+    const [review, reviewError] = await reviewDao.findOneReviewById(reviewId);
     if (reviewError) {
         res.status(500);
         res.json({
@@ -43,7 +44,7 @@ export const getReview = async (req, res) => {
 export const getCommentsForReview = async (req, res) => {
     if (
         !req.body.limit ||
-        !req.body.offset ||
+        req.body.offset == null ||
         !validateOffsetAndLimit(req.body.offset, req.body.limit)
     ) {
         res.status(400);
@@ -53,6 +54,7 @@ export const getCommentsForReview = async (req, res) => {
         return;
     }
 
+    const [limit, offset] = [req.body.limit, req.body.offset];
     const reviewId = req.params.reviewId;
     const [comments, commentsDaoError] =
         await commentDao.getAllCommentsWithReviewId(reviewId);
@@ -105,6 +107,34 @@ export const createAReview = async (req, res) => {
     }
 
     const albumId = req.params.albumId;
+    const currentUserId = req.session.currentUser._id;
+    try {
+        const ratingWillBeCreated = req.body.rating != null;
+        const ratingAlreadyExists = await AlbumRating.exists({
+            albumId,
+            rater: currentUserId,
+        });
+        if (!ratingWillBeCreated && !ratingAlreadyExists) {
+            res.status(400);
+            res.json({
+                errors: [
+                    "To write a review, a rating must be provided in the creation request of already " +
+                        "exist for this album by the user.",
+                ],
+            });
+            return;
+        }
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error occurred while attempting to create this review. " +
+                    "Please try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
+
     const [review, creationError] =
         req.body.rating != null
             ? await reviewDao.createReview(
@@ -134,5 +164,22 @@ export const createAReview = async (req, res) => {
     res.json(review);
 };
 
-// api/v1/album/:albumId/review/:id
-export const deleteAReview = async (req, res) => {};
+// api/v1/album/:albumId/review/:reviewId
+export const deleteAReview = async (req, res) => {
+    const reviewId = req.params.reviewId;
+    const [successFullyDeleted, error] = await reviewDao.deleteAReview(
+        reviewId
+    );
+    if (error || !successFullyDeleted) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error occurred trying to delete this review. " +
+                    "Please try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
+
+    res.sendStatus(200);
+};

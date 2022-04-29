@@ -3,44 +3,39 @@ import { albumRatingSchema } from "./album-rating.js";
 import { commentSchema } from "./comment.js";
 const { Schema } = mongoose;
 
-export const reviewSchema = new Schema({
-    author: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+export const reviewSchema = new Schema(
+    {
+        author: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        albumId: {
+            type: String,
+            required: true,
+        },
+        content: {
+            type: String,
+            required: true,
+        },
+        likedBy: {
+            type: [Schema.Types.ObjectId], // User
+            required: true,
+            default: [],
+            ref: "User",
+        },
+        comments: {
+            type: [commentSchema],
+            required: true,
+            default: [],
+            select: false,
+        },
+        rating: {
+            type: albumRatingSchema, // See ./album-rating.js
+            required: true,
+        },
     },
-    albumId: {
-        type: String,
-        required: true,
-    },
-    content: {
-        type: String,
-        required: true,
-    },
-    likedBy: {
-        type: [Schema.Types.ObjectId], // User
-        required: true,
-        default: [],
-        ref: "User",
-    },
-    comments: {
-        type: [commentSchema],
-        required: true,
-        default: [],
-        select: false,
-    },
-    rating: {
-        type: albumRatingSchema, // See ./album-rating.js
-        required: true,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now(),
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now(),
-    },
-});
+    { timestamps: true }
+);
 
 export const Review = mongoose.model("Review", reviewSchema);
