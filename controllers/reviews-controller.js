@@ -6,7 +6,7 @@ import {
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
 
-// api/v1/album/:albumId/review/:id
+// api/v1/album/:albumId/review/:reviewId
 export const getReview = async (req, res) => {
     const albumId = req.params.albumId;
     const [albumData, albumError] = await getAlbumData(albumId);
@@ -20,7 +20,7 @@ export const getReview = async (req, res) => {
         return;
     }
 
-    const reviewId = req.params.id;
+    const reviewId = req.params.reviewId;
     const [review, reviewError] = reviewDao.findOneReviewById(reviewId);
     if (reviewError) {
         res.status(500);
@@ -39,7 +39,7 @@ export const getReview = async (req, res) => {
     });
 };
 
-// api/v1/album/:albumId/review/:id/comments
+// api/v1/album/:albumId/review/:reviewId/comments
 export const getCommentsForReview = async (req, res) => {
     if (
         !req.body.limit ||
@@ -53,7 +53,7 @@ export const getCommentsForReview = async (req, res) => {
         return;
     }
 
-    const reviewId = req.params.id;
+    const reviewId = req.params.reviewId;
     const [comments, commentsDaoError] =
         await commentDao.getAllCommentsWithReviewId(reviewId);
     // TODO: What happens if this review does not exist?

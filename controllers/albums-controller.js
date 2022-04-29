@@ -6,9 +6,9 @@ import {
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
 
-// /api/v1/album/:id
+// /api/v1/album/:albumId
 export const getAlbum = async (req, res) => {
-    const albumId = req.params.id;
+    const albumId = req.params.albumId;
     const errorJSON = {
         errors: [
             "Could not retrieve this album due to an internal server error. Please try again or" +
@@ -50,10 +50,10 @@ export const getAlbum = async (req, res) => {
     }
 };
 
-// /api/v1/album/:id/reviews
+// /api/v1/album/:albumId/reviews
 // JSON body should contain a limit and an offset.
 export const getAlbumReviews = async (req, res) => {
-    const albumId = req.params.id;
+    const albumId = req.params.albumId;
 
     // NOTE: Limit should never be 0 so this is fine,
     // however offset can be 0, and thus a normal
@@ -104,9 +104,9 @@ export const getAlbumReviews = async (req, res) => {
     });
 };
 
-// /api/v1/album/:id/avgRating
+// /api/v1/album/:albumId/avgRating
 export const getAverageRating = async (req, res) => {
-    const albumId = req.params.id;
+    const albumId = req.params.albumId;
     const [ratings, error] = await ratingDao.findAllRatingsForAlbumId(albumId);
     if (error) {
         res.status(500);
@@ -128,14 +128,14 @@ export const getAverageRating = async (req, res) => {
     });
 };
 
-// /api/v1/album/:id/rate
+// /api/v1/album/:albumId/rate
 export const rateAlbum = async (req, res) => {
     if (!req.body.rating) {
         console.log(req.body);
         res.sendStatus(400);
         return;
     }
-    const albumId = req.params.id;
+    const albumId = req.params.albumId;
     const rater = req.session.currentUser._id;
     const [newRating, error] = await ratingDao.createRating(
         albumId,

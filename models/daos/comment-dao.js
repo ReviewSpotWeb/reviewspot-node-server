@@ -45,7 +45,16 @@ const deleteComment = async (commentId) => {
         await Comment.findByIdAndDelete(commentId);
         return [true, null];
     } catch (error) {
-        return [false, error];
+        return [null, error];
+    }
+};
+
+const userOwnsComment = async (userId, commentId) => {
+    try {
+        const comment = await Comment.findById(commentId);
+        return [comment.author === userId, null];
+    } catch (error) {
+        return [null, error];
     }
 };
 
@@ -54,4 +63,5 @@ export default {
     createCommentOnReview,
     deleteComment,
     editComment,
+    userOwnsComment,
 };

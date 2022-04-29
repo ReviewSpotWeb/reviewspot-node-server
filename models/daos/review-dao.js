@@ -68,13 +68,13 @@ const createReview = async (author, albumId, content, ratingValue = null) => {
 const userOwnsReview = async (userId, reviewId) => {
     try {
         const review = await Review.findById(reviewId);
-        return [userId == review.author, null];
+        return [userId === review.author, null];
     } catch (error) {
         return [null, error];
     }
 };
 
-const updateAReview = async (reviewId, newContent) => {
+const updateReview = async (reviewId, newContent) => {
     try {
         const updatedReview = await Review.findByIdAndUpdate(reviewId, {
             content: newContent,
@@ -99,6 +99,7 @@ export default {
     findOneReviewById,
     findAllReviewsByUserId,
     createReview,
+    updateReview,
     deleteAReview,
     userOwnsReview,
 };

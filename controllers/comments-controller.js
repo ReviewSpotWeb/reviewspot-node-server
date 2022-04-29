@@ -7,6 +7,7 @@ const postCommentOnReview = async (req, res) => {
         return;
     }
 
+    const reviewId = req.params.reviewId;
     const content = req.body.content;
     const [newComment, error] = commentDao.createCommentOnReview(
         reviewId,
