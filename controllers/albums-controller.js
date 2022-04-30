@@ -6,6 +6,8 @@ import {
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
 
+export const getNewReleases = async (req, res) => {};
+
 // /api/v1/album/:albumId
 export const getAlbum = async (req, res) => {
     const albumId = req.params.albumId;
@@ -23,26 +25,24 @@ export const getAlbum = async (req, res) => {
         return;
     }
 
-    let rating, ratingError;
+    let review, reviewError;
     if (req.session.currentUser) {
         const currentUserId = req.session.currentUser._id;
-        [rating, ratingError] = await ratingDao.findRatingByAlbumIdAndUserId(
-            albumId,
-            currentUserId
+        [review, reviewError] = await reviewDao.getReviewByUserIdAndAlbumId(
+            currentUserId,
+            albumId
         );
-    }
-    if (ratingError) {
-        console.error(ratingError);
-        res.status(500);
-        res.json(errorJSON);
-        return;
+        if (reviewError || !review) {
+            res.status(500);
+            res.json(errorJSON);
+            return;
+        }
     }
 
     res.status(200);
-    if (rating) {
-        console.log(rating);
+    if (review) {
         res.json({
-            userRating: rating,
+            userReview: review,
             album,
         });
     } else {
@@ -50,7 +50,10 @@ export const getAlbum = async (req, res) => {
     }
 };
 
+export const searchForAnAlbum = async (req, res) => {};
+
 // /api/v1/album/:albumId/reviews
+// TODO: Switch from JSON body to qs params.
 // JSON body should contain a limit and an offset.
 export const getAlbumReviews = async (req, res) => {
     const albumId = req.params.albumId;
@@ -59,15 +62,15 @@ export const getAlbumReviews = async (req, res) => {
     // however offset can be 0, and thus a normal
     // Falsy check will not work here.
     if (
-        !req.body.limit ||
-        req.body.offset == null ||
-        !validateOffsetAndLimit(req.body.offset, req.body.limit)
+        !req.query.limit ||
+        req.query.offset == null ||
+        !validateOffsetAndLimit(req.query.offset, req.query.limit)
     ) {
         res.sendStatus(400);
         return;
     }
 
-    const { limit, offset } = req.body;
+    const { limit, offset } = req.query;
     const [reviews, error] = await reviewDao.findReviewsByAlbumId(albumId);
     if (error) {
         res.status(500);

@@ -72,6 +72,18 @@ const createReview = async (author, albumId, content, ratingValue = null) => {
     }
 };
 
+const getReviewByUserIdAndAlbumId = async (author, albumId) => {
+    try {
+        const review = await Review.findOne({
+            authorInfo: { authorId: author },
+            albumId,
+        });
+        return [review, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
 const userOwnsReview = async (userId, reviewId) => {
     try {
         const review = await Review.findById(reviewId);
@@ -104,6 +116,7 @@ const deleteAReview = async (reviewId) => {
 export default {
     findReviewsByAlbumId,
     findOneReviewById,
+    getReviewByUserIdAndAlbumId,
     findAllReviewsByUserId,
     createReview,
     updateReview,

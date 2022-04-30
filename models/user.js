@@ -1,28 +1,27 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-export const userSchema = new Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        maxlength: 50,
+export const userSchema = new Schema(
+    {
+        username: {
+            type: String,
+            required: true,
+            unique: true,
+            maxlength: 50,
+        },
+        password: {
+            type: String,
+            required: true,
+        },
+        role: {
+            type: String,
+            required: true,
+            enum: ["general", "moderator"],
+            default: "general",
+        },
+        bio: { type: String, default: "" },
     },
-    password: {
-        type: String,
-        required: true,
-    },
-    role: {
-        type: String,
-        required: true,
-        enum: ["general", "moderator"],
-        default: "general",
-    },
-    bio: String,
-    joinedOn: {
-        type: Date,
-        default: Date.now(),
-    },
-});
+    { timestamps: { createdAt: true, updatedAt: false } }
+);
 
 export const User = mongoose.model("User", userSchema);

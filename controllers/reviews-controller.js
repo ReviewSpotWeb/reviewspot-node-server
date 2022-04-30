@@ -7,6 +7,9 @@ import {
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
 
+// api/v1/topReviews
+export const getTopFiveReviews = async (req, res) => {};
+
 // api/v1/album/:albumId/review/:reviewId
 export const getReview = async (req, res) => {
     const albumId = req.params.albumId;
@@ -43,9 +46,9 @@ export const getReview = async (req, res) => {
 // api/v1/album/:albumId/review/:reviewId/comments
 export const getCommentsForReview = async (req, res) => {
     if (
-        !req.body.limit ||
-        req.body.offset == null ||
-        !validateOffsetAndLimit(req.body.offset, req.body.limit)
+        !req.query.limit ||
+        req.query.offset == null ||
+        !validateOffsetAndLimit(req.query.offset, req.query.limit)
     ) {
         res.status(400);
         res.json({
@@ -54,7 +57,7 @@ export const getCommentsForReview = async (req, res) => {
         return;
     }
 
-    const [limit, offset] = [req.body.limit, req.body.offset];
+    const [limit, offset] = [req.query.limit, req.query.offset];
     const reviewId = req.params.reviewId;
     const [comments, commentsDaoError] =
         await commentDao.getAllCommentsWithReviewId(reviewId);
