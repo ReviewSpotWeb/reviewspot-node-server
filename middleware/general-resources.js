@@ -177,3 +177,46 @@ export const reviewCannotAlreadyExist = async (req, res, next) => {
         });
     }
 };
+
+export const userIdMustBeValid = async (req, res, next) => {
+    const userId = req.params.userId;
+    if (!mongoose.isValidObjectId(userId)) {
+        res.status(400);
+        res.json({
+            errors: [
+                "The given user ID is not a valid instance of an object ID.",
+            ],
+        });
+        return;
+    }
+
+    try {
+        const userExists = await User.exists({ _id: userId });
+        if (!userExists) {
+            res.status(404);
+            res.json({
+                errors: ["No user exists with that object ID."],
+            });
+        } else {
+            next();
+        }
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error occurred while fetching this user's data. " +
+                    "Please contact a site contributor.",
+            ],
+        });
+    }
+};
+
+export const userIdMustBelongToCurrentUser = async (req, res, next) => {
+    const userId = req.params.userId;
+    const currentUserId = req.session.currentUser._id;
+    if (!currentUserId.equals(userId)) {
+        res.sendStatus(403);
+    } else {
+        next();
+    }
+};

@@ -7,6 +7,7 @@ import ConnectMongoDBSession from "connect-mongodb-session";
 import authRoutes from "./routes/auth.js";
 import reviewRoutes from "./routes/reviews.js";
 import albumsRouter from "./routes/albums.js";
+import { userRoutes } from "./routes/user.js";
 
 // App and DB initialization.
 const app = express();
@@ -50,7 +51,7 @@ db.on("error", () => console.error("Could not connect to the database."));
 
 // Setting Up Routes
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1", reviewRoutes, albumsRouter);
+app.use("/api/v1", reviewRoutes, albumsRouter, userRoutes);
 
 const port = process.env.PORT || 4000;
 app.listen(4000, () => console.log(`Listening on port ${port}.`));
