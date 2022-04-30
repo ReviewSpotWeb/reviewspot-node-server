@@ -32,7 +32,7 @@ export const getAlbum = async (req, res) => {
             currentUserId,
             albumId
         );
-        if (reviewError || !review) {
+        if (reviewError) {
             res.status(500);
             res.json(errorJSON);
             return;
