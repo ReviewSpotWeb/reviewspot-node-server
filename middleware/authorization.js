@@ -1,5 +1,3 @@
-import { User } from "../models/user.js";
-
 export const userMustBeLoggedIn = (req, res, next) => {
     if (!req.session.currentUser) {
         res.status(401);
@@ -7,6 +5,13 @@ export const userMustBeLoggedIn = (req, res, next) => {
             errors: [
                 "You must be logged in to access this information or operation.",
             ],
+        });
+    } else if (req.session.currentUser.banned) {
+        res.status(403);
+        res.json({
+            message:
+                "Unfortunately, a moderator has banned you from the platform due to bad behavior. " +
+                "Please contact a site contirbutor if you'd like to appeal this decision.",
         });
     } else {
         next();
