@@ -1,4 +1,5 @@
 import userDao from "../models/daos/user-dao.js";
+import { validateOffsetAndLimit } from "../utils/pagination.js";
 
 // GET /api/v1/user/:userId
 export const getProfileInfo = async (req, res) => {
@@ -37,7 +38,7 @@ export const updateBio = async (req, res) => {
         return;
     }
 
-    const [updatedUser, error] = userDao.updateUserBio(userId, bio);
+    const [updatedUser, error] = await userDao.updateUserBio(userId, bio);
     if (error) {
         res.status(500);
         res.json({
@@ -53,4 +54,15 @@ export const updateBio = async (req, res) => {
     res.json({
         updatedUser,
     });
+};
+
+export const getUsersReviews = async (req, res) => {
+    if (
+        !req.query.limit ||
+        !req.query.offset ||
+        !validateOffsetAndLimit(req.query.offset, req.query.limit)
+    ) {
+        res.sendStatus(400);
+        return;
+    }
 };

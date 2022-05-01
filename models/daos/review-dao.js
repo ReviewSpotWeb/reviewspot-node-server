@@ -29,7 +29,9 @@ const findOneReviewById = async (id) => {
 
 const findAllReviewsByUserId = async (userId) => {
     try {
-        const reviews = await Review.find({ author: userId });
+        const reviews = await Review.find({
+            "authorInfo.authorId": userId,
+        }).sort({ createdAt: -1 });
         return reviews ? [reviews, null] : [[], null];
     } catch (error) {
         return [null, error];
