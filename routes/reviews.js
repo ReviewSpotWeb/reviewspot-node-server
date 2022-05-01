@@ -10,6 +10,7 @@ import {
     deleteAReview,
     editAReview,
     getCommentsForReview,
+    getPopularReviews,
     getReview,
     likeAReview,
 } from "../controllers/reviews-controller.js";
@@ -23,6 +24,9 @@ import {
     userMustOwnReview,
 } from "../middleware/general-resources.js";
 const reviewRoutes = Router();
+
+// Popular Reviews, a.k.a. H O T  T A K E S
+reviewRoutes.get("/popularReviews", getPopularReviews);
 
 // CRUD for album reviews.
 reviewRoutes.get(
