@@ -157,7 +157,7 @@ export const reviewCannotAlreadyExist = async (req, res, next) => {
         const albumId = req.params.albumId;
         const currentUserId = req.session.currentUser._id;
         const alreadyExists = await Review.exists({
-            author: { authorId: currentUserId },
+            "authorInfo.authorId": currentUserId,
             albumId,
         });
         if (alreadyExists) {

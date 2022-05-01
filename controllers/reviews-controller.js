@@ -7,8 +7,22 @@ import {
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
 
-// api/v1/topReviews
-export const getTopFiveReviews = async (req, res) => {};
+// api/v1/popularReviews
+export const getPopularReviews = async (_, res) => {
+    const [popularReviews, error] = await reviewDao.getTop10Reviews();
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error occurred while attempting to get this resource. " +
+                    "Please try again or contact a site contributor. ",
+            ],
+        });
+        return;
+    }
+    res.status(200);
+    res.json(popularReviews);
+};
 
 // api/v1/album/:albumId/review/:reviewId
 export const getReview = async (req, res) => {

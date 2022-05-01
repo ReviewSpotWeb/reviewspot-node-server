@@ -161,6 +161,39 @@ const getNumberOfReviewsForAlbum = async (albumId) => {
     }
 };
 
+// NOTE: Rank is defined by sorting the site's reviews by number of likes first,
+// and then by number of comments.
+const getTop10Reviews = async () => {
+    try {
+        const reviews = await Review.aggregate([
+            {
+                $project: {
+                    authorInfo: 1,
+                    albumId: 1,
+                    content: 1,
+                    likedBy: 1,
+                    numComments: 1,
+                    rating: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    numLikes: {
+                        $size: "$likedBy",
+                    },
+                },
+            },
+            {
+                $sort: { numLikes: -1, numComments: -1 },
+            },
+            {
+                $limit: 10,
+            },
+        ]);
+        return [reviews ? reviews : [], null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
 export default {
     findReviewsByAlbumId,
     findOneReviewById,
@@ -172,4 +205,5 @@ export default {
     likeAReview,
     userOwnsReview,
     getNumberOfReviewsForAlbum,
+    getTop10Reviews,
 };
