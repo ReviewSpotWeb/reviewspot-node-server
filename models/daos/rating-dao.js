@@ -22,11 +22,6 @@ const findAllRatingsForAlbumId = async (albumId) => {
 // author is of type ObjectId<User>
 const createRating = async (albumId, rater, rating) => {
     try {
-        const currentRating = await AlbumRating.findOne({ albumId, rater });
-        if (currentRating) {
-            await AlbumRating.updateOne({ _id: currentRating._id }, { rating });
-            return [currentRating, null];
-        }
         const newRating = new AlbumRating({
             rater,
             rating,
@@ -39,8 +34,20 @@ const createRating = async (albumId, rater, rating) => {
     }
 };
 
+const updateRating = async (ratingId, newRating) => {
+    try {
+        const updatedRating = await AlbumRating.findByIdAndUpdate(ratingId, {
+            rating: newRating,
+        });
+        return [updatedRating, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
 export default {
     findRatingByAlbumIdAndUserId,
     findAllRatingsForAlbumId,
     createRating,
+    updateRating,
 };

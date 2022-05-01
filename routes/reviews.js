@@ -8,8 +8,10 @@ import {
 import {
     createAReview,
     deleteAReview,
+    editAReview,
     getCommentsForReview,
     getReview,
+    likeAReview,
 } from "../controllers/reviews-controller.js";
 import { userMustBeLoggedIn } from "../middleware/authorization.js";
 import {
@@ -41,7 +43,8 @@ reviewRoutes.put(
     userMustBeLoggedIn,
     albumIdMustBeValid,
     reviewIdMustBeValid,
-    userMustOwnReview
+    userMustOwnReview,
+    editAReview
 );
 reviewRoutes.delete(
     "/album/:albumId/review/:reviewId",
@@ -52,12 +55,13 @@ reviewRoutes.delete(
     deleteAReview
 );
 
-// CRUD for liking a review.
+// Route for liking a review.
 reviewRoutes.post(
     "/album/:albumId/review/:reviewId/like",
     userMustBeLoggedIn,
     albumIdMustBeValid,
-    reviewIdMustBeValid
+    reviewIdMustBeValid,
+    likeAReview
 );
 
 // CRUD for comments.

@@ -195,5 +195,51 @@ export const editAReview = async (req, res) => {
         res.sendStatus(400);
         return;
     }
-    // TODO
+
+    const reviewId = req.params.reviewId;
+    const { rating, content } = req.body;
+    const [updatedReview, error] = reviewDao.updateReview(
+        reviewId,
+        content,
+        rating
+    );
+
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error was encountered while attempting to update this review. " +
+                    "Please try again or contact a site admin.",
+            ],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json({ updatedReview });
+};
+
+export const likeAReview = async (req, res) => {
+    const userId = req.session.currentUser._id;
+    const reviewId = req.params.reviewId;
+
+    const [updatedReview, error] = await reviewDao.likeAReview(
+        userId,
+        reviewId
+    );
+    if (error || !updatedReview) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error was encountered while attempting to like this review. " +
+                    "Please try again or contact a site admin.",
+            ],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json({
+        updatedReview,
+    });
 };

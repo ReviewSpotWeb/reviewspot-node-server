@@ -2,7 +2,7 @@ import { AlbumRating } from "../album-rating.js";
 import { Review } from "../review.js";
 import mongoose from "mongoose";
 import { User } from "../user.js";
-const { ObjectId } = mongoose.Types;
+import ratingDao from "./rating-dao.js";
 
 // NOTE: Because of the potential data size for a reviews's comments,
 // we separate that into its own DAO and route, and thus should never actually
@@ -93,11 +93,25 @@ const userOwnsReview = async (userId, reviewId) => {
     }
 };
 
-const updateReview = async (reviewId, newContent) => {
+const updateReview = async (reviewId, newContent = null, newRating = null) => {
     try {
-        const updatedReview = await Review.findByIdAndUpdate(reviewId, {
-            content: newContent,
-        });
+        const reviewToUpdate = await Review.findById(reviewId);
+        let updatedRating, ratingError;
+        if (newRating != null) {
+            const ratingId = reviewToUpdate.rating._id;
+            [updatedRating, ratingError] = await ratingDao.updateRating(
+                ratingId,
+                newRating
+            );
+            if (ratingError) throw ratingError;
+        }
+        let reviewUpdateObject = {};
+        if (newContent) reviewUpdateObject[content] = newContent;
+        if (updatedRating) reviewUpdateObject[rating] = updatedRating;
+        const updatedReview = await Review.findByIdAndUpdate(
+            reviewId,
+            reviewUpdateObject
+        );
         return [updatedReview, null];
     } catch (error) {
         return [null, error];
@@ -113,6 +127,29 @@ const deleteAReview = async (reviewId) => {
     }
 };
 
+// NOTE: Like actually means to add OR remove a like, depending
+// on if the user's ID is in the list of user IDs for individuals
+// who have liked this review.
+// TODO: Pull vs Push in the array.
+const likeAReview = async (userId, reviewId) => {
+    try {
+        const reviewToLike = await Review.findById(reviewId);
+        let updatedReview;
+        if (reviewToLike.likedBy.includes(userId)) {
+            updatedReview = await Review.findByIdAndUpdate(reviewId, {
+                $pull: { likedBy: userId },
+            });
+        } else {
+            updatedReview = await Review.findByIdAndUpdate(reviewId, {
+                $push: { likedBy: userId },
+            });
+        }
+        return [updatedReview, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
 export default {
     findReviewsByAlbumId,
     findOneReviewById,
@@ -121,5 +158,6 @@ export default {
     createReview,
     updateReview,
     deleteAReview,
+    likeAReview,
     userOwnsReview,
 };
