@@ -15,9 +15,10 @@ export const getProfileInfo = async (req, res) => {
         });
         return;
     }
+    const [numReviews, numComments] = userStats;
 
     res.status(200);
-    res.json({ userInfo, userStats });
+    res.json({ userInfo, numReviews, numComments });
 };
 
 // PUT /api/v1/user/:userId

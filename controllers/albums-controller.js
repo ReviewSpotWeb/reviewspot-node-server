@@ -93,12 +93,11 @@ export const searchForAnAlbum = async (req, res) => {
                     let [ratings, ratingsError] =
                         await ratingDao.findAllRatingsForAlbumId(album.id);
                     if (ratingsError) throw ratingsError;
+                    const ratingValues = ratings.map((r) => r.rating);
                     const avgRating =
-                        ratings.length > 0
-                            ? ratings.reduce(
-                                  (ar1, ar2) => ar1.rating + ar2.rating,
-                                  0
-                              ) / ratings.length
+                        ratingValues.length > 0
+                            ? ratingValues.reduce((r1, r2) => r1 + r2, 0) /
+                              ratingValues.length
                             : null;
                     return { ...album, avgRating, numReviews };
                 })

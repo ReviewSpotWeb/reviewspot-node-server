@@ -1,6 +1,8 @@
 import { Comment } from "../comment.js";
 import { User } from "../user.js";
 import { Review } from "../review.js";
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 
 const getUserById = async (userId) => {
     try {
@@ -14,10 +16,10 @@ const getUserById = async (userId) => {
 const getUserStats = async (userId) => {
     try {
         const numComments = await Comment.count({
-            authorInfo: { authorId: userId },
+            "authorInfo.authorId": userId,
         });
         const numReviews = await Review.count({
-            authorInfo: { authorId: userId },
+            "authorInfo.authorId": userId,
         });
 
         return [[numReviews, numComments], null];
@@ -31,6 +33,7 @@ const updateUserBio = async (userId, newBio) => {
         const userToUpdate = await User.findByIdAndUpdate(userId, {
             bio: newBio,
         });
+        return [userToUpdate, null];
     } catch (error) {
         return [null, error];
     }
