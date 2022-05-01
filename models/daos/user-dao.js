@@ -1,8 +1,6 @@
 import { Comment } from "../comment.js";
 import { User } from "../user.js";
 import { Review } from "../review.js";
-import mongoose from "mongoose";
-const { ObjectId } = mongoose.Types;
 
 const getUserById = async (userId) => {
     try {

@@ -1,5 +1,10 @@
+import reviewDao from "../models/daos/review-dao.js";
 import userDao from "../models/daos/user-dao.js";
-import { validateOffsetAndLimit } from "../utils/pagination.js";
+import { getNameFromAlbumId } from "../utils/album-utils.js";
+import {
+    validateOffsetAndLimit,
+    getPageFromModelList,
+} from "../utils/pagination.js";
 
 // GET /api/v1/user/:userId
 export const getProfileInfo = async (req, res) => {
@@ -59,10 +64,62 @@ export const updateBio = async (req, res) => {
 export const getUsersReviews = async (req, res) => {
     if (
         !req.query.limit ||
-        !req.query.offset ||
+        req.query.offset == null ||
         !validateOffsetAndLimit(req.query.offset, req.query.limit)
     ) {
         res.sendStatus(400);
         return;
     }
+
+    const { userId } = req.params;
+    const { limit, offset } = req.query;
+    const [userReviews, error] = await reviewDao.findAllReviewsByUserId(userId);
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error has occurred while attempting to fetch this user's reviews. " +
+                    "Please try again or contact a site admin.",
+            ],
+        });
+        return;
+    }
+    if (offset >= userReviews.length) {
+        res.status(400);
+        res.json({
+            errors: [
+                "The given offset is out of range for the number of items.",
+            ],
+        });
+        return;
+    }
+    const pageData = getPageFromModelList(userReviews, offset, limit);
+    let reviews;
+    try {
+        reviews = await Promise.all(
+            pageData.listSlice.map(async (review) => {
+                const reviewObj = review.toObject();
+                const albumId = review.albumId;
+                const [albumName, error] = await getNameFromAlbumId(albumId);
+                if (error) throw error;
+                return { ...reviewObj, albumName };
+            })
+        );
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error has occurred while attempting to fetch album data for this user's reviews. " +
+                    "Please try again or contact a site admin.",
+            ],
+        });
+        return;
+    }
+    res.status(200);
+    res.json({
+        next: pageData.next,
+        prev: pageData.prev,
+        reviews,
+        total: userReviews.length,
+    });
 };

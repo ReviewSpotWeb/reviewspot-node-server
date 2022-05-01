@@ -61,7 +61,6 @@ export const getCommentsForReview = async (req, res) => {
     const reviewId = req.params.reviewId;
     const [comments, commentsDaoError] =
         await commentDao.getAllCommentsWithReviewId(reviewId);
-    // TODO: What happens if this review does not exist?
     if (commentsDaoError) {
         res.status(500);
         res.json({
@@ -79,7 +78,7 @@ export const getCommentsForReview = async (req, res) => {
         });
     }
 
-    if (offset * limit >= comments.length && offset != 0) {
+    if (offset && offset >= comments.length) {
         res.status(400);
         res.json({
             errors: [
@@ -188,7 +187,6 @@ export const deleteAReview = async (req, res) => {
     res.sendStatus(200);
 };
 
-// TODO: Should be able to submit a new rating.
 // api/v1/album/:albumId/review/:reviewId
 export const editAReview = async (req, res) => {
     if (!req.body.rating && !req.body.content) {
