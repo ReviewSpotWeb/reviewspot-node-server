@@ -6,20 +6,42 @@ import {
     getPageFromModelList,
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
+import { getNameFromAlbumId } from "../utils/album-utils.js";
 
 // api/v1/popularReviews
 export const getPopularReviews = async (_, res) => {
-    const [popularReviews, error] = await reviewDao.getTop10Reviews();
+    const serverErrorMsg =
+        "An internal server error occurred while attempting to get this resource. " +
+        "Please try again or contact a site contributor. ";
+    let [popularReviews, error] = await reviewDao.getTop10Reviews();
     if (error) {
         res.status(500);
         res.json({
-            errors: [
-                "An internal server error occurred while attempting to get this resource. " +
-                    "Please try again or contact a site contributor. ",
-            ],
+            errors: [serverErrorMsg],
         });
         return;
     }
+
+    try {
+        popularReviews = await Promise.all(
+            popularReviews.map(async (review) => {
+                const albumId = review.albumId;
+                const [albumName, albumNameError] = await getNameFromAlbumId(
+                    albumId
+                );
+                if (albumNameError) throw albumNameError;
+                return { ...review, albumName };
+            })
+        );
+    } catch (error) {
+        console.error(error);
+        res.status(500);
+        res.json({
+            errors: [serverErrorMsg],
+        });
+        return;
+    }
+
     res.status(200);
     res.json(popularReviews);
 };
