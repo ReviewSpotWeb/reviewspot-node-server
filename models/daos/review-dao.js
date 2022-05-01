@@ -152,8 +152,8 @@ const likeAReview = async (userId, reviewId) => {
 
 const getNumberOfReviewsForAlbum = async (albumId) => {
     try {
-        const numReviews = Review.count({ albumId });
-        return [numReviews, error];
+        const numReviews = await Review.count({ albumId });
+        return [numReviews, null];
     } catch (error) {
         return [null, error];
     }

@@ -27,18 +27,18 @@ export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
     if (tokenError) return [null, tokenError];
     const searchRequestOptions = {
         method: "get",
-        url: `https://api.spotify.com/v1/search/`,
-        data: stringify({
+        url: `https://api.spotify.com/v1/search`,
+        params: {
             q: searchQuery,
+            limit,
+            offset,
             type: "album",
-            limit: limit.toString(),
-            offset: offset.toString(),
-        }),
+        },
         headers: {
             Authorization: `${spotifyToken.tokenType} ${spotifyToken.accessToken}`,
         },
     };
-    const [data, error] = await getAlbumData(searchRequestOptions);
+    const [data, error] = await getDataFromRequest(searchRequestOptions);
     if (error) return [null, error];
     const albumData = data.albums;
 
@@ -51,5 +51,8 @@ export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
         albumData.offset,
         albumData.limit,
     ];
-    return [{ total, nextURL, prevURL, albums, resOffset, resLimit }, null];
+    return [
+        { total, nextURL, prevURL, albums, offset: resOffset, limit: resLimit },
+        null,
+    ];
 };

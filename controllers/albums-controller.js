@@ -65,8 +65,9 @@ export const searchForAnAlbum = async (req, res) => {
     }
 
     const { q, limit, offset } = req.query;
-    let [searchData, error] = await searchForAlbum(q, limit, offset);
+    let [data, error] = await searchForAlbum(q, limit, offset);
     if (error && error.response.status < 500) {
+        console.error(error);
         res.status(400);
         res.json({
             errors: ["Please ensure your limit and offset values are correct."],
@@ -79,6 +80,44 @@ export const searchForAnAlbum = async (req, res) => {
         });
         return;
     }
+
+    let searchData;
+    try {
+        searchData = {
+            albums: await Promise.all(
+                data.albums.map(async (album) => {
+                    let [numReviews, numReviewsError] =
+                        await reviewDao.getNumberOfReviewsForAlbum(album.id);
+                    if (numReviewsError) throw numReviewsError;
+                    let [ratings, ratingsError] =
+                        await ratingDao.findAllRatingsForAlbumId(album.id);
+                    if (ratingsError) throw ratingsError;
+                    const avgRating =
+                        ratings.length > 0
+                            ? ratings.reduce(
+                                  (ar1, ar2) => ar1.rating + ar2.rating,
+                                  0
+                              ) / ratings.length
+                            : null;
+                    return { ...album, avgRating, numReviews };
+                })
+            ),
+            limit: data.limit,
+            offset: data.offset,
+            total: data.total,
+        };
+    } catch (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error was encountered while attempting to retrieve search data. " +
+                    "Please try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
+    if (data.nextURL) searchData.next = data.offset + data.limit;
+    if (data.prevURL) searchData.prev = data.offset - data.limit;
 
     // TODO: Append number of reviews and avg rating to albums from search.
     res.status(200);

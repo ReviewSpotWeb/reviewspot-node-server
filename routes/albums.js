@@ -16,7 +16,7 @@ albumsRouter.get(
     albumIdMustBeValid,
     getAlbumReviews
 );
-albumsRouter.get("/album/search", searchForAnAlbum);
+albumsRouter.get("/albums/search", searchForAnAlbum);
 albumsRouter.get("/album/:albumId/avgRating", getAverageRating);
 albumsRouter.post("/album/:albumId/rate", userMustBeLoggedIn, rateAlbum);
 
