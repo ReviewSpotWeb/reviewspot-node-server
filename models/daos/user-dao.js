@@ -1,5 +1,6 @@
 import { Comment } from "../comment.js";
 import { User } from "../user.js";
+import { Review } from "../review.js";
 
 const getUserById = async (userId) => {
     try {
