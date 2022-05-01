@@ -150,6 +150,15 @@ const likeAReview = async (userId, reviewId) => {
     }
 };
 
+const getNumberOfReviewsForAlbum = async (albumId) => {
+    try {
+        const numReviews = Review.count({ albumId });
+        return [numReviews, error];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
 export default {
     findReviewsByAlbumId,
     findOneReviewById,
@@ -160,4 +169,5 @@ export default {
     deleteAReview,
     likeAReview,
     userOwnsReview,
+    getNumberOfReviewsForAlbum,
 };

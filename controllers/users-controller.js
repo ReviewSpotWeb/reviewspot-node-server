@@ -1,4 +1,4 @@
-import userDao from "../models/daos/user-dao";
+import userDao from "../models/daos/user-dao.js";
 
 // GET /api/v1/user/:userId
 export const getProfileInfo = async (req, res) => {

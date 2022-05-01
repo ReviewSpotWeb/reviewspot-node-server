@@ -1,6 +1,9 @@
 import ratingDao from "../models/daos/rating-dao.js";
 import reviewDao from "../models/daos/review-dao.js";
-import { getAlbumData } from "../services/spotify/spotify-album-service.js";
+import {
+    getAlbumData,
+    searchForAlbum,
+} from "../services/spotify/spotify-album-service.js";
 import {
     getPageFromModelList,
     validateOffsetAndLimit,
@@ -50,7 +53,37 @@ export const getAlbum = async (req, res) => {
     }
 };
 
-export const searchForAnAlbum = async (req, res) => {};
+export const searchForAnAlbum = async (req, res) => {
+    if (
+        !req.query.q ||
+        !req.query.limit ||
+        !req.query.offset ||
+        !validateOffsetAndLimit(req.query.offset, req.query.limit)
+    ) {
+        res.sendStatus(400);
+        return;
+    }
+
+    const { q, limit, offset } = req.query;
+    let [searchData, error] = await searchForAlbum(q, limit, offset);
+    if (error && error.response.status < 500) {
+        res.status(400);
+        res.json({
+            errors: ["Please ensure your limit and offset values are correct."],
+        });
+        return;
+    } else if (error) {
+        res.status(500);
+        res.json({
+            errors: ["An internal server error occurred while attempting to "],
+        });
+        return;
+    }
+
+    // TODO: Append number of reviews and avg rating to albums from search.
+    res.status(200);
+    res.json(searchData);
+};
 
 // /api/v1/album/:albumId/reviews
 // TODO: Switch from JSON body to qs params.
