@@ -37,11 +37,26 @@ const updateUserBio = async (userId, newBio) => {
     }
 };
 
+// TODO: This should ABSOLUTELY be a transaction.
 const banUser = async (userId) => {
     try {
         const userToBan = await User.findByIdAndUpdate(userId, {
             banned: true,
         });
+        const reviewsDeleted = await Review.deleteMany({
+            "authorInfo.authorId": userId,
+        });
+        const commentsDeleted = await Comment.deleteMany({
+            "authorInfo.authorId": userId,
+        });
+        const likedReviews = await Review.updateMany(
+            { likedBy: userId },
+            {
+                $pull: {
+                    likedBy: userId,
+                },
+            }
+        );
         return [userToBan, null];
     } catch (error) {
         return [null, error];
