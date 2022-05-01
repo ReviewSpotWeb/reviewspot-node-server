@@ -2,6 +2,7 @@ import ratingDao from "../models/daos/rating-dao.js";
 import reviewDao from "../models/daos/review-dao.js";
 import {
     getAlbumData,
+    getNewReleases,
     searchForAlbum,
 } from "../services/spotify/spotify-album-service.js";
 import {
@@ -9,7 +10,65 @@ import {
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
 
-export const getNewReleases = async (req, res) => {};
+export const getUserNewReleases = async (req, res) => {
+    if (
+        !req.query.limit ||
+        req.query.offset == null ||
+        !validateOffsetAndLimit(req.query.offset, req.query.limit)
+    ) {
+        res.sendStatus(400);
+        return;
+    }
+    const errorMsg =
+        "An internal server error occurred while attempting to get new releases. " +
+        "Please try again or contact a site contirbutor.";
+    const limit = parseInt(req.query.limit);
+    const offset = parseInt(req.query.offset);
+    // https://stackoverflow.com/questions/70321094/how-to-get-the-clients-country-in-express-js
+    const ipAddr =
+        req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    let [newReleasesData, error] = await getNewReleases(ipAddr, limit, offset);
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [errorMsg],
+        });
+        return;
+    }
+
+    try {
+        newReleasesData = {
+            ...newReleasesData,
+            albums: await Promise.all(
+                newReleasesData.albums.map(async (album) => {
+                    const [numReviews, numReviewsError] =
+                        await reviewDao.getNumberOfReviewsForAlbum(album.id);
+                    if (numReviewsError) throw numReviewsError;
+                    const [ratings, ratingsError] =
+                        await ratingDao.findAllRatingsForAlbumId(album.id);
+                    if (ratingsError) throw ratingsError;
+                    const ratingValues = ratings.map((r) => r.rating);
+                    const avgRating =
+                        ratings.length > 0
+                            ? ratingValues.reduce((r1, r2) => r1 + r2, 0) /
+                              ratings.length
+                            : null;
+                    return { ...album, numReviews, avgRating };
+                })
+            ),
+        };
+    } catch (error) {
+        console.error(error);
+        res.status(500);
+        res.json({
+            errors: [errorMsg],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json(newReleasesData);
+};
 
 // /api/v1/album/:albumId
 export const getAlbum = async (req, res) => {
@@ -116,8 +175,16 @@ export const searchForAnAlbum = async (req, res) => {
         });
         return;
     }
-    if (data.nextURL) searchData.next = data.offset + data.limit;
-    if (data.prevURL) searchData.prev = data.offset - data.limit;
+    if (data.nextURL)
+        searchData.next = {
+            offset: data.offset + data.limit,
+            limit: data.limit,
+        };
+    if (data.prevURL)
+        searchData.prev = {
+            offset: data.offset - data.limit,
+            limit: searchData.limit,
+        };
 
     // TODO: Append number of reviews and avg rating to albums from search.
     res.status(200);

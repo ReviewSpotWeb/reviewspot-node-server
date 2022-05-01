@@ -37,10 +37,10 @@
         "cors": "^2.8.5",
         "express": "^4.17.3",
         "express-session": "^1.17.2",
+        "geoip-lite": "^1.4.5",
         "moment": "^2.29.3",
         "mongoose": "^6.2.10",
-        "nodejs-base64": "^2.0.0",
-        "qs": "^6.10.3"
+        "nodejs-base64": "^2.0.0"
     },
     "devDependencies": {
         "jest": "^27.5.1",

@@ -173,3 +173,22 @@ export const signUp = async (req, res) => {
     });
     res.status(200);
 };
+
+export const isLoggedIn = (req, res) => {
+    const currentUser = req.session.currentUser;
+    if (currentUser) {
+        const { username, _id, role } = currentUser;
+        res.json({
+            loggedIn: true,
+            userInfo: {
+                username,
+                _id,
+                role,
+            },
+        });
+    } else {
+        res.json({
+            loggedIn: false,
+        });
+    }
+};
