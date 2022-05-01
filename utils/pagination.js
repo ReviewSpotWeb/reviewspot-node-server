@@ -7,21 +7,21 @@ export const getPageFromModelList = (listOfModel, offset, limit) => {
     if (offset == 0) {
         prev = null;
     } else {
-        prev = { offset: offset - 1, limit };
+        prev = { offset: offset - limit, limit };
     }
 
-    if ((offset + 1) * limit >= listOfModel.length) {
+    if (offset + limit >= listOfModel.length) {
         next = null;
     } else {
-        next = { offset: offset + 1, limit };
+        next = { offset: offset + limit, limit };
     }
 
-    const startIndex = offset * limit;
-    const lastIndexBasedOnOffset = (offset + 1) * limit - 1;
-    const lastIndexOfList = listOfModel.length - 1;
-    const listSlice =
-        lastIndexBasedOnOffset >= lastIndexOfList
-            ? listOfModel.slice(startIndex)
-            : listOfModel.slice(startIndex, lastIndexBasedOnOffset);
+    const startIndex = offset;
+    const endIndexBasedOnOffset = offset + limit;
+    const endIndexOfList = listOfModel.length;
+    const listSlice = listOfModel.slice(
+        startIndex,
+        Math.min(endIndexBasedOnOffset, endIndexOfList)
+    );
     return { prev, next, listSlice };
 };

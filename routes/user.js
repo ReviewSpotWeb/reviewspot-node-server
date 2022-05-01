@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { getProfileInfo, updateBio } from "../controllers/users-controller.js";
+import {
+    getProfileInfo,
+    getUsersReviews,
+    updateBio,
+} from "../controllers/users-controller.js";
 import {
     userIdMustBelongToCurrentUser,
     userIdMustBeValid,
@@ -7,7 +11,7 @@ import {
 export const userRoutes = Router();
 
 userRoutes.get("/user/:userId", userIdMustBeValid, getProfileInfo);
-userRoutes.get("/user/:userId/reviews", userIdMustBeValid, (req, res) => {});
+userRoutes.get("/user/:userId/reviews", userIdMustBeValid, getUsersReviews);
 userRoutes.put(
     "/user/:userId",
     userIdMustBeValid,
