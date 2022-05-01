@@ -46,7 +46,9 @@ const createReviewReport = async (submittedBy, reason, albumId, reviewId) => {
 
 const getActiveReports = async () => {
     try {
-        const reports = await Report.find({ dismissed: false });
+        const reports = await Report.find({ dismissed: false }).sort({
+            createdAt: -1,
+        });
         return [reports, null];
     } catch (error) {
         return [null, error];

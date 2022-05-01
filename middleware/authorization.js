@@ -1,3 +1,5 @@
+import { User } from "../models/user.js";
+
 export const userMustBeLoggedIn = async (req, res, next) => {
     if (!req.session.currentUser) {
         res.status(401);
@@ -7,6 +9,7 @@ export const userMustBeLoggedIn = async (req, res, next) => {
             ],
         });
     } else if (req.session.currentUser.banned) {
+        await req.session.destroy();
         res.status(403);
         res.json({
             message:
@@ -34,15 +37,22 @@ export const userMustBeLoggedIn = async (req, res, next) => {
 };
 
 // NOTE: This middleware assumes that routes have confirmation that the user is logged in.
-export const userMustBeAModerator = (req, res, next) => {
-    // TODO: Can we abstract this to a global function?
-    if (req.currentUser.role != "moderator") {
-        res.status(403);
-        res.json({
-            errors: [
-                "You do not have proper permissions to access this information or operation.",
-            ],
-        });
+export const userMustBeAModerator = async (req, res, next) => {
+    if (req.session.currentUser.role !== "moderator") {
+        const currentUserId = req.session.currentUser._id;
+        const currentUserInDB = await User.findById(currentUserId);
+        if (currentUserInDB.role === "moderator") {
+            req.session.currentUser = currentUserInDB;
+            await req.session.save();
+            next();
+        } else {
+            res.status(403);
+            res.json({
+                errors: [
+                    "You do not have proper permissions to access this information or operation.",
+                ],
+            });
+        }
     } else {
         next();
     }

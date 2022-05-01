@@ -16,7 +16,7 @@ const createBanAudit = async (bannedUserId, submittedById, reason) => {
 
 const getBanAuditsByDate = async () => {
     try {
-        const audits = BanAudit.find().sort({ createdAt: -1 });
+        const audits = await BanAudit.find().sort({ createdAt: -1 });
         return [audits, null];
     } catch (error) {
         return [null, error];
