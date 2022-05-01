@@ -143,13 +143,13 @@ export const createAReview = async (req, res) => {
             ? await reviewDao.createReview(
                   req.session.currentUser._id,
                   albumId,
-                  req.body.content
+                  req.body.content,
+                  req.body.rating
               )
             : await reviewDao.createReview(
                   req.session.currentUser._id,
                   albumId,
-                  req.body.content,
-                  req.body.rating
+                  req.body.content
               );
 
     if (creationError) {

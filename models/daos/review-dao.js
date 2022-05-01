@@ -1,6 +1,5 @@
 import { AlbumRating } from "../album-rating.js";
 import { Review } from "../review.js";
-import mongoose from "mongoose";
 import { User } from "../user.js";
 import ratingDao from "./rating-dao.js";
 
@@ -12,7 +11,7 @@ import ratingDao from "./rating-dao.js";
 
 const findReviewsByAlbumId = async (albumId) => {
     try {
-        const reviews = await Review.find({ albumId });
+        const reviews = await Review.find({ albumId }).sort({ createdAt: -1 });
         return reviews ? [reviews, null] : [[], null];
     } catch (error) {
         return [null, error];
@@ -121,6 +120,8 @@ const updateReview = async (reviewId, newContent = null, newRating = null) => {
 const deleteAReview = async (reviewId) => {
     try {
         const result = await Review.findByIdAndDelete(reviewId);
+        const commentIds = result.comments.map((comment) => comment._id);
+        await Comment.deleteMany({ _id: commentIds });
         return [result != null, null];
     } catch (error) {
         return [null, error];

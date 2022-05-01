@@ -84,6 +84,7 @@ export const searchForAnAlbum = async (req, res) => {
     let searchData;
     try {
         searchData = {
+            // https://stackoverflow.com/questions/40140149/use-async-await-with-array-map
             albums: await Promise.all(
                 data.albums.map(async (album) => {
                     let [numReviews, numReviewsError] =

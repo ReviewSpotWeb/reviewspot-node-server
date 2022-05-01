@@ -9,6 +9,7 @@ import commentDao from "../models/daos/comment-dao.js";
 import reviewDao from "../models/daos/review-dao.js";
 import { Review } from "../models/review.js";
 import { getAlbumData } from "../services/spotify/spotify-album-service.js";
+import { User } from "../models/user.js";
 
 // NOTE: To be called after a review is confirmed to exist.
 export const userMustOwnReview = async (req, res, next) => {
@@ -156,7 +157,7 @@ export const reviewCannotAlreadyExist = async (req, res, next) => {
         const albumId = req.params.albumId;
         const currentUserId = req.session.currentUser._id;
         const alreadyExists = await Review.exists({
-            author: currentUserId,
+            author: { authorId: currentUserId },
             albumId,
         });
         if (alreadyExists) {
