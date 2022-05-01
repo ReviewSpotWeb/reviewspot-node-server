@@ -1,10 +1,10 @@
 import { Review } from "../review.js";
 import { Comment } from "../comment.js";
+import { User } from "../user.js";
 
 const getAllCommentsWithReviewId = async (reviewId) => {
     try {
-        const review = await Review.findById(reviewId, { comments: 1 });
-        const comments = review.comments;
+        const comments = await Comment.find({ reviewId }).sort({});
         return [comments, null];
     } catch (error) {
         return [null, error];
@@ -13,18 +13,20 @@ const getAllCommentsWithReviewId = async (reviewId) => {
 
 const createCommentOnReview = async (reviewId, author, content) => {
     try {
+        const givenUser = await User.findById(author);
+        const authorInfo = {
+            authorId: givenUser._id,
+            authorName: givenUser.username,
+            authorRole: givenUser.role,
+        };
         const newComment = new Comment({
-            author,
+            authorInfo,
             content,
+            reviewId,
         });
         await Review.findByIdAndUpdate(reviewId, {
-            $push: {
-                comments: {
-                    $each: [newComment],
-                    $sort: {
-                        createdAt: -1,
-                    },
-                },
+            $inc: {
+                numComments: 1,
             },
         });
         await newComment.save();
@@ -42,7 +44,7 @@ const editComment = async (reviewId, commentId, newContent) => {
         });
         // https://stackoverflow.com/questions/15691224/mongoose-update-values-in-array-of-objects
         await Review.updateOne(
-            { _id: reviewId, "comments.id": commentId },
+            { _id: reviewId, "comments._id": commentId },
             {
                 $set: {
                     "comments.$.content": newContent,
@@ -59,10 +61,8 @@ const editComment = async (reviewId, commentId, newContent) => {
 const deleteComment = async (reviewId, commentId) => {
     try {
         await Review.findByIdAndUpdate(reviewId, {
-            $pull: {
-                comments: {
-                    _id: commentId,
-                },
+            $inc: {
+                numComments: -1,
             },
         });
         const deletedComment = await Comment.findByIdAndDelete(commentId);
@@ -75,7 +75,16 @@ const deleteComment = async (reviewId, commentId) => {
 const userOwnsComment = async (userId, commentId) => {
     try {
         const comment = await Comment.findById(commentId);
-        return [comment.author.equals(userId), null];
+        return [comment.authorInfo.authorId.equals(userId), null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
+const getAComment = async (commentId) => {
+    try {
+        const comment = await Comment.findById(commentId);
+        return [comment, null];
     } catch (error) {
         return [null, error];
     }
@@ -84,6 +93,7 @@ const userOwnsComment = async (userId, commentId) => {
 export default {
     getAllCommentsWithReviewId,
     createCommentOnReview,
+    getAComment,
     deleteComment,
     editComment,
     userOwnsComment,

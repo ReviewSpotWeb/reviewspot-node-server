@@ -1,7 +1,6 @@
 import { getDataFromRequest } from "../axios-handlers.js";
 import { SpotifyToken } from "../../models/spotify-token.js";
 import { base64encode } from "nodejs-base64";
-import { stringify } from "qs";
 import moment from "moment";
 // TODO: Way to create a Singleton class with SpotifyToken?
 
@@ -35,7 +34,7 @@ export const getSpotifyToken = async () => {
                 Authorization: `Basic ${AUTH_ROUTE_TOKEN}`,
                 "Content-Type": "application/x-www-form-urlencoded",
             },
-            data: stringify({ grant_type: "client_credentials" }),
+            params: { grant_type: "client_credentials" },
         };
 
         const [tokenData, error] = await getDataFromRequest(tokenRouteOptions);

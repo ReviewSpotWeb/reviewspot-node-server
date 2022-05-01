@@ -1,7 +1,7 @@
 import { AlbumRating } from "../album-rating.js";
 import { Review } from "../review.js";
-import mongoose from "mongoose";
-const { ObjectId } = mongoose.Types;
+import { User } from "../user.js";
+import ratingDao from "./rating-dao.js";
 
 // NOTE: Because of the potential data size for a reviews's comments,
 // we separate that into its own DAO and route, and thus should never actually
@@ -11,7 +11,7 @@ const { ObjectId } = mongoose.Types;
 
 const findReviewsByAlbumId = async (albumId) => {
     try {
-        const reviews = await Review.find({ albumId });
+        const reviews = await Review.find({ albumId }).sort({ createdAt: -1 });
         return reviews ? [reviews, null] : [[], null];
     } catch (error) {
         return [null, error];
@@ -29,7 +29,9 @@ const findOneReviewById = async (id) => {
 
 const findAllReviewsByUserId = async (userId) => {
     try {
-        const reviews = await Review.find({ author: userId });
+        const reviews = await Review.find({
+            "authorInfo.authorId": userId,
+        }).sort({ createdAt: -1 });
         return reviews ? [reviews, null] : [[], null];
     } catch (error) {
         return [null, error];
@@ -51,8 +53,14 @@ const createReview = async (author, albumId, content, ratingValue = null) => {
                 albumId,
             });
         }
+        const givenUser = await User.findById(author);
+        const authorInfo = {
+            authorId: givenUser._id,
+            authorName: givenUser.username,
+            authorRole: givenUser.role,
+        };
         const newReview = new Review({
-            author,
+            authorInfo,
             albumId,
             content,
             rating: userRating,
@@ -65,20 +73,46 @@ const createReview = async (author, albumId, content, ratingValue = null) => {
     }
 };
 
-const userOwnsReview = async (userId, reviewId) => {
+const getReviewByUserIdAndAlbumId = async (author, albumId) => {
     try {
-        const review = await Review.findById(reviewId);
-        return [userId.equals(review.author), null];
+        const review = await Review.findOne({
+            authorInfo: { authorId: author },
+            albumId,
+        });
+        return [review, null];
     } catch (error) {
         return [null, error];
     }
 };
 
-const updateReview = async (reviewId, newContent) => {
+const userOwnsReview = async (userId, reviewId) => {
     try {
-        const updatedReview = await Review.findByIdAndUpdate(reviewId, {
-            content: newContent,
-        });
+        const review = await Review.findById(reviewId);
+        return [userId.equals(review.authorInfo.authorId), null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
+const updateReview = async (reviewId, newContent = null, newRating = null) => {
+    try {
+        const reviewToUpdate = await Review.findById(reviewId);
+        let updatedRating, ratingError;
+        if (newRating != null) {
+            const ratingId = reviewToUpdate.rating._id;
+            [updatedRating, ratingError] = await ratingDao.updateRating(
+                ratingId,
+                newRating
+            );
+            if (ratingError) throw ratingError;
+        }
+        let reviewUpdateObject = {};
+        if (newContent) reviewUpdateObject[content] = newContent;
+        if (updatedRating) reviewUpdateObject[rating] = updatedRating;
+        const updatedReview = await Review.findByIdAndUpdate(
+            reviewId,
+            reviewUpdateObject
+        );
         return [updatedReview, null];
     } catch (error) {
         return [null, error];
@@ -88,7 +122,73 @@ const updateReview = async (reviewId, newContent) => {
 const deleteAReview = async (reviewId) => {
     try {
         const result = await Review.findByIdAndDelete(reviewId);
+        await Comment.deleteMany({ reviewId });
         return [result != null, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
+// NOTE: Like actually means to add OR remove a like, depending
+// on if the user's ID is in the list of user IDs for individuals
+// who have liked this review.
+// TODO: Pull vs Push in the array.
+const likeAReview = async (userId, reviewId) => {
+    try {
+        const reviewToLike = await Review.findById(reviewId);
+        let updatedReview;
+        if (reviewToLike.likedBy.includes(userId)) {
+            updatedReview = await Review.findByIdAndUpdate(reviewId, {
+                $pull: { likedBy: userId },
+            });
+        } else {
+            updatedReview = await Review.findByIdAndUpdate(reviewId, {
+                $push: { likedBy: userId },
+            });
+        }
+        return [updatedReview, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
+const getNumberOfReviewsForAlbum = async (albumId) => {
+    try {
+        const numReviews = await Review.count({ albumId });
+        return [numReviews, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
+// NOTE: Rank is defined by sorting the site's reviews by number of likes first,
+// and then by number of comments.
+const getTop10Reviews = async () => {
+    try {
+        const reviews = await Review.aggregate([
+            {
+                $project: {
+                    authorInfo: 1,
+                    albumId: 1,
+                    content: 1,
+                    likedBy: 1,
+                    numComments: 1,
+                    rating: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    numLikes: {
+                        $size: "$likedBy",
+                    },
+                },
+            },
+            {
+                $sort: { numLikes: -1, numComments: -1 },
+            },
+            {
+                $limit: 10,
+            },
+        ]);
+        return [reviews ? reviews : [], null];
     } catch (error) {
         return [null, error];
     }
@@ -97,9 +197,13 @@ const deleteAReview = async (reviewId) => {
 export default {
     findReviewsByAlbumId,
     findOneReviewById,
+    getReviewByUserIdAndAlbumId,
     findAllReviewsByUserId,
     createReview,
     updateReview,
     deleteAReview,
+    likeAReview,
     userOwnsReview,
+    getNumberOfReviewsForAlbum,
+    getTop10Reviews,
 };

@@ -2,13 +2,17 @@ import { Router } from "express";
 import {
     deleteACommentOnReview,
     editACommentOnReview,
+    getACommentOnReview,
     postCommentOnReview,
 } from "../controllers/comments-controller.js";
 import {
     createAReview,
     deleteAReview,
+    editAReview,
     getCommentsForReview,
+    getPopularReviews,
     getReview,
+    likeAReview,
 } from "../controllers/reviews-controller.js";
 import { userMustBeLoggedIn } from "../middleware/authorization.js";
 import {
@@ -18,8 +22,11 @@ import {
     reviewIdMustBeValid,
     userMustOwnComment,
     userMustOwnReview,
-} from "../middleware/resources.js";
+} from "../middleware/general-resources.js";
 const reviewRoutes = Router();
+
+// Popular Reviews, a.k.a. H O T  T A K E S
+reviewRoutes.get("/popularReviews", getPopularReviews);
 
 // CRUD for album reviews.
 reviewRoutes.get(
@@ -40,7 +47,8 @@ reviewRoutes.put(
     userMustBeLoggedIn,
     albumIdMustBeValid,
     reviewIdMustBeValid,
-    userMustOwnReview
+    userMustOwnReview,
+    editAReview
 );
 reviewRoutes.delete(
     "/album/:albumId/review/:reviewId",
@@ -51,12 +59,13 @@ reviewRoutes.delete(
     deleteAReview
 );
 
-// CRUD for liking a review.
+// Route for liking a review.
 reviewRoutes.post(
     "/album/:albumId/review/:reviewId/like",
     userMustBeLoggedIn,
     albumIdMustBeValid,
-    reviewIdMustBeValid
+    reviewIdMustBeValid,
+    likeAReview
 );
 
 // CRUD for comments.
@@ -65,6 +74,14 @@ reviewRoutes.get(
     albumIdMustBeValid,
     reviewIdMustBeValid,
     getCommentsForReview
+);
+
+reviewRoutes.get(
+    "/album/:albumId/review/:reviewId/comment/:commentId",
+    albumIdMustBeValid,
+    reviewIdMustBeValid,
+    commentIdMustBeValid,
+    getACommentOnReview
 );
 
 reviewRoutes.post(

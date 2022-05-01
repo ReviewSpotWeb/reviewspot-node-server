@@ -6,6 +6,45 @@ import {
     getPageFromModelList,
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
+import { getNameFromAlbumId } from "../utils/album-utils.js";
+
+// api/v1/popularReviews
+export const getPopularReviews = async (_, res) => {
+    const serverErrorMsg =
+        "An internal server error occurred while attempting to get this resource. " +
+        "Please try again or contact a site contributor. ";
+    let [popularReviews, error] = await reviewDao.getTop10Reviews();
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [serverErrorMsg],
+        });
+        return;
+    }
+
+    try {
+        popularReviews = await Promise.all(
+            popularReviews.map(async (review) => {
+                const albumId = review.albumId;
+                const [albumName, albumNameError] = await getNameFromAlbumId(
+                    albumId
+                );
+                if (albumNameError) throw albumNameError;
+                return { ...review, albumName };
+            })
+        );
+    } catch (error) {
+        console.error(error);
+        res.status(500);
+        res.json({
+            errors: [serverErrorMsg],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json(popularReviews);
+};
 
 // api/v1/album/:albumId/review/:reviewId
 export const getReview = async (req, res) => {
@@ -43,9 +82,9 @@ export const getReview = async (req, res) => {
 // api/v1/album/:albumId/review/:reviewId/comments
 export const getCommentsForReview = async (req, res) => {
     if (
-        !req.body.limit ||
-        req.body.offset == null ||
-        !validateOffsetAndLimit(req.body.offset, req.body.limit)
+        !req.query.limit ||
+        req.query.offset == null ||
+        !validateOffsetAndLimit(req.query.offset, req.query.limit)
     ) {
         res.status(400);
         res.json({
@@ -54,11 +93,10 @@ export const getCommentsForReview = async (req, res) => {
         return;
     }
 
-    const [limit, offset] = [req.body.limit, req.body.offset];
+    const [limit, offset] = [req.query.limit, req.query.offset];
     const reviewId = req.params.reviewId;
     const [comments, commentsDaoError] =
         await commentDao.getAllCommentsWithReviewId(reviewId);
-    // TODO: What happens if this review does not exist?
     if (commentsDaoError) {
         res.status(500);
         res.json({
@@ -76,7 +114,7 @@ export const getCommentsForReview = async (req, res) => {
         });
     }
 
-    if (offset * limit >= comments.length && offset != 0) {
+    if (offset > 0 && offset >= comments.length) {
         res.status(400);
         res.json({
             errors: [
@@ -140,13 +178,13 @@ export const createAReview = async (req, res) => {
             ? await reviewDao.createReview(
                   req.session.currentUser._id,
                   albumId,
-                  req.body.content
+                  req.body.content,
+                  req.body.rating
               )
             : await reviewDao.createReview(
                   req.session.currentUser._id,
                   albumId,
-                  req.body.content,
-                  req.body.rating
+                  req.body.content
               );
 
     if (creationError) {
@@ -171,6 +209,7 @@ export const deleteAReview = async (req, res) => {
         reviewId
     );
     if (error || !successFullyDeleted) {
+        console.log(successFullyDeleted);
         res.status(500);
         res.json({
             errors: [
@@ -182,4 +221,59 @@ export const deleteAReview = async (req, res) => {
     }
 
     res.sendStatus(200);
+};
+
+// api/v1/album/:albumId/review/:reviewId
+export const editAReview = async (req, res) => {
+    if (!req.body.rating && !req.body.content) {
+        res.sendStatus(400);
+        return;
+    }
+
+    const reviewId = req.params.reviewId;
+    const { rating, content } = req.body;
+    const [updatedReview, error] = reviewDao.updateReview(
+        reviewId,
+        content,
+        rating
+    );
+
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error was encountered while attempting to update this review. " +
+                    "Please try again or contact a site admin.",
+            ],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json({ updatedReview });
+};
+
+export const likeAReview = async (req, res) => {
+    const userId = req.session.currentUser._id;
+    const reviewId = req.params.reviewId;
+
+    const [updatedReview, error] = await reviewDao.likeAReview(
+        userId,
+        reviewId
+    );
+    if (error || !updatedReview) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error was encountered while attempting to like this review. " +
+                    "Please try again or contact a site admin.",
+            ],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json({
+        updatedReview,
+    });
 };

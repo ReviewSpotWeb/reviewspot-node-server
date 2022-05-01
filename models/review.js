@@ -5,10 +5,20 @@ const { Schema } = mongoose;
 
 export const reviewSchema = new Schema(
     {
-        author: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
+        authorInfo: {
+            authorId: {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+                required: true,
+            },
+            authorName: {
+                type: String, // User.username
+                required: true,
+            },
+            authorRole: {
+                type: String, // User.role
+                required: true,
+            },
         },
         albumId: {
             type: String,
@@ -24,11 +34,10 @@ export const reviewSchema = new Schema(
             default: [],
             ref: "User",
         },
-        comments: {
-            type: [commentSchema],
+        numComments: {
+            type: Number,
             required: true,
-            default: [],
-            select: false,
+            default: 0,
         },
         rating: {
             type: albumRatingSchema, // See ./album-rating.js

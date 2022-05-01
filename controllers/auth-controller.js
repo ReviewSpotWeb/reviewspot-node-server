@@ -45,7 +45,9 @@ export const login = async (req, res) => {
 
     let userToLogIn;
     try {
-        userToLogIn = await User.findOne({ username: req.body.username });
+        userToLogIn = await User.findOne({
+            username: req.body.username,
+        }).select("+password");
     } catch (error) {
         res.status(500);
         res.json({ errors: [error.message] });
@@ -170,4 +172,23 @@ export const signUp = async (req, res) => {
         _id: newUser._id,
     });
     res.status(200);
+};
+
+export const isLoggedIn = (req, res) => {
+    const currentUser = req.session.currentUser;
+    if (currentUser) {
+        const { username, _id, role } = currentUser;
+        res.json({
+            loggedIn: true,
+            userInfo: {
+                username,
+                _id,
+                role,
+            },
+        });
+    } else {
+        res.json({
+            loggedIn: false,
+        });
+    }
 };
