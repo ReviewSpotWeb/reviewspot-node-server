@@ -45,7 +45,9 @@ export const login = async (req, res) => {
 
     let userToLogIn;
     try {
-        userToLogIn = await User.findOne({ username: req.body.username });
+        userToLogIn = await User.findOne({
+            username: req.body.username,
+        }).select("+password");
     } catch (error) {
         res.status(500);
         res.json({ errors: [error.message] });
