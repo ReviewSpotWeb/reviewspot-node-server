@@ -4,6 +4,7 @@ import {
     editACommentOnReview,
     getACommentOnReview,
     postCommentOnReview,
+    reportAComment,
 } from "../controllers/comments-controller.js";
 import {
     createAReview,
@@ -13,6 +14,7 @@ import {
     getPopularReviews,
     getReview,
     likeAReview,
+    reportAReview,
 } from "../controllers/reviews-controller.js";
 import { userMustBeLoggedIn } from "../middleware/authorization.js";
 import {
@@ -57,6 +59,13 @@ reviewRoutes.delete(
     reviewIdMustBeValid,
     userMustOwnReview,
     deleteAReview
+);
+reviewRoutes.post(
+    "/album/:albumId/review/:reviewId",
+    userMustBeLoggedIn,
+    albumIdMustBeValid,
+    reviewIdMustBeValid,
+    reportAReview
 );
 
 // Route for liking a review.
@@ -109,6 +118,15 @@ reviewRoutes.delete(
     commentIdMustBeValid,
     userMustOwnComment,
     deleteACommentOnReview
+);
+
+reviewRoutes.post(
+    "/album/:albumId/review/:reviewId/comment/:commentId/report",
+    userMustBeLoggedIn,
+    albumIdMustBeValid,
+    reviewIdMustBeValid,
+    commentIdMustBeValid,
+    reportAComment
 );
 
 export default reviewRoutes;

@@ -21,6 +21,10 @@ export const userSchema = new Schema(
             default: "general",
         },
         bio: { type: String, default: "" },
+        banned: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: { createdAt: true, updatedAt: false } }
 );

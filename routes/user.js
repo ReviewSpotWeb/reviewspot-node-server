@@ -1,9 +1,14 @@
 import { Router } from "express";
+import { banUser } from "../controllers/moderator-controller.js";
 import {
     getProfileInfo,
     getUsersReviews,
     updateBio,
 } from "../controllers/users-controller.js";
+import {
+    userMustBeAModerator,
+    userMustBeLoggedIn,
+} from "../middleware/authorization.js";
 import {
     userIdMustBelongToCurrentUser,
     userIdMustBeValid,
@@ -17,4 +22,11 @@ userRoutes.put(
     userIdMustBeValid,
     userIdMustBelongToCurrentUser,
     updateBio
+);
+userRoutes.put(
+    "/user/:userId/ban",
+    userMustBeLoggedIn,
+    userMustBeAModerator,
+    userIdMustBeValid,
+    banUser
 );

@@ -277,3 +277,32 @@ export const likeAReview = async (req, res) => {
         updatedReview,
     });
 };
+
+export const reportAReview = async (req, res) => {
+    if (!req.body.reason || req.body.reason === "") {
+        res.sendStatus(400);
+    }
+
+    const { albumId, reviewId } = req.params;
+    const { reason } = req.body;
+    const currentUserId = req.session.currentUser._id;
+    const [report, error] = reportDao.createReviewReport(
+        currentUserId,
+        reason,
+        albumId,
+        reviewId
+    );
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error occurred while trying to make this report. " +
+                    "Please try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json(report);
+};

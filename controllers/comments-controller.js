@@ -1,4 +1,5 @@
 import commentDao from "../models/daos/comment-dao.js";
+import reportDao from "../models/daos/report-dao.js";
 
 // /api/v1/album/:albumId/review/:reviewId/
 export const postCommentOnReview = async (req, res) => {
@@ -97,4 +98,34 @@ export const getACommentOnReview = async (req, res) => {
 
     res.status(200);
     res.json(comment);
+};
+
+export const reportAComment = async (req, res) => {
+    if (!req.body.reason || req.body.reason === "") {
+        res.sendStatus(400);
+    }
+
+    const { albumId, reviewId, commentId } = req.params;
+    const { reason } = req.body;
+    const currentUserId = req.session.currentUser._id;
+    const [report, error] = reportDao.createCommentReport(
+        currentUserId,
+        reason,
+        albumId,
+        reviewId,
+        commentId
+    );
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error occurred while trying to make this report. " +
+                    "Please try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json(report);
 };

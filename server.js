@@ -8,6 +8,11 @@ import authRoutes from "./routes/auth.js";
 import reviewRoutes from "./routes/reviews.js";
 import albumsRouter from "./routes/albums.js";
 import { userRoutes } from "./routes/user.js";
+import {
+    userMustBeAModerator,
+    userMustBeLoggedIn,
+} from "./middleware/authorization.js";
+import { moderatorRoutes } from "./routes/moderator.js";
 
 // App and DB initialization.
 const app = express();
@@ -51,6 +56,12 @@ db.on("error", () => console.error("Could not connect to the database."));
 
 // Setting Up Routes
 app.use("/api/v1/auth", authRoutes);
+app.use(
+    "/api/v1/moderator",
+    userMustBeLoggedIn,
+    userMustBeAModerator,
+    moderatorRoutes
+);
 app.use("/api/v1", reviewRoutes, albumsRouter, userRoutes);
 
 const port = process.env.PORT || 4000;
