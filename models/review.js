@@ -34,11 +34,10 @@ export const reviewSchema = new Schema(
             default: [],
             ref: "User",
         },
-        comments: {
-            type: [commentSchema],
+        numComments: {
+            type: Number,
             required: true,
-            default: [],
-            select: false,
+            default: 0,
         },
         rating: {
             type: albumRatingSchema, // See ./album-rating.js

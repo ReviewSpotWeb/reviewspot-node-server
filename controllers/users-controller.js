@@ -84,7 +84,7 @@ export const getUsersReviews = async (req, res) => {
         });
         return;
     }
-    if (offset >= userReviews.length) {
+    if (offset > 0 && offset >= userReviews.length) {
         res.status(400);
         res.json({
             errors: [

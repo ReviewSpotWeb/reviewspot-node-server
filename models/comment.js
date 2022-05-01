@@ -24,6 +24,11 @@ export const commentSchema = new Schema(
             type: String,
             required: true,
         },
+        reviewId: {
+            type: Schema.Types.ObjectId,
+            ref: "Review",
+            required: true,
+        },
     },
     { timestamps: true }
 );

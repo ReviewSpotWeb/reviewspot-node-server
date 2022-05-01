@@ -78,7 +78,7 @@ export const getCommentsForReview = async (req, res) => {
         });
     }
 
-    if (offset && offset >= comments.length) {
+    if (offset > 0 && offset >= comments.length) {
         res.status(400);
         res.json({
             errors: [

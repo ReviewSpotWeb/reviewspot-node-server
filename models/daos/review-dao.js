@@ -122,8 +122,7 @@ const updateReview = async (reviewId, newContent = null, newRating = null) => {
 const deleteAReview = async (reviewId) => {
     try {
         const result = await Review.findByIdAndDelete(reviewId);
-        const commentIds = result.comments.map((comment) => comment._id);
-        await Comment.deleteMany({ _id: commentIds });
+        await Comment.deleteMany({ reviewId });
         return [result != null, null];
     } catch (error) {
         return [null, error];

@@ -153,7 +153,7 @@ export const getAlbumReviews = async (req, res) => {
         return;
     }
 
-    if (offset && offset >= reviews.length) {
+    if (offset > 0 && offset >= reviews.length) {
         res.status(400);
         res.json({
             errors: [

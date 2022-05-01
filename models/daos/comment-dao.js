@@ -4,8 +4,7 @@ import { User } from "../user.js";
 
 const getAllCommentsWithReviewId = async (reviewId) => {
     try {
-        const review = await Review.findById(reviewId, { comments: 1 });
-        const comments = review.comments;
+        const comments = await Comment.find({ reviewId }).sort({});
         return [comments, null];
     } catch (error) {
         return [null, error];
@@ -23,15 +22,11 @@ const createCommentOnReview = async (reviewId, author, content) => {
         const newComment = new Comment({
             authorInfo,
             content,
+            reviewId,
         });
         await Review.findByIdAndUpdate(reviewId, {
-            $push: {
-                comments: {
-                    $each: [newComment],
-                    $sort: {
-                        createdAt: -1,
-                    },
-                },
+            $inc: {
+                numComments: 1,
             },
         });
         await newComment.save();
@@ -66,10 +61,8 @@ const editComment = async (reviewId, commentId, newContent) => {
 const deleteComment = async (reviewId, commentId) => {
     try {
         await Review.findByIdAndUpdate(reviewId, {
-            $pull: {
-                comments: {
-                    _id: commentId,
-                },
+            $inc: {
+                numComments: -1,
             },
         });
         const deletedComment = await Comment.findByIdAndDelete(commentId);
