@@ -1,4 +1,6 @@
+import banAuditDao from "../models/daos/ban-audit-dao.js";
 import reportDao from "../models/daos/report-dao.js";
+import userDao from "../models/daos/user-dao.js";
 import {
     validateOffsetAndLimit,
     getPageFromModelList,
@@ -65,5 +67,103 @@ export const getActiveReports = async (req, res) => {
     const { prev, next } = pageData;
     const reports = pageData.listSlice;
     res.status(200);
-    res.json({ reports, prev, next });
+    res.json({ reports, prev, next, total: activeReports.length });
+};
+
+// /api/v1/moderator/banAudits
+export const getBanAudits = async (req, res) => {
+    if (req.query.offset == null || req.query.limit == null) {
+        res.sendStatus(400);
+        return;
+    }
+
+    let offset, limit;
+    try {
+        offset = parseInt(req.query.offset);
+        limit = parseInt(req.query.limit);
+        if (!validateOffsetAndLimit(offset, limit)) {
+            res.sendStatus(400);
+            return;
+        }
+    } catch (error) {
+        res.sendStatus(400);
+        return;
+    }
+
+    const [banAudits, banAuditError] = await banAuditDao.getBanAuditsByDate();
+    if (banAuditError) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An error has occurred while attempting to retrieve ban audits. " +
+                    "Please try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
+
+    if (offset > 0 && offset >= banAudits.length) {
+        res.status(400);
+        res.json({
+            errors: [
+                "The given offset is out of range for the number of ban audits.",
+            ],
+        });
+        return;
+    }
+
+    const pageData = getPageFromModelList(banAudits, offset, limit);
+    const { prev, next } = pageData;
+    const audits = pageData.listSlice;
+
+    res.status(200);
+    res.json({
+        audits,
+        prev,
+        next,
+        total: banAudits.length,
+    });
+};
+
+// /api/v1/user/:userId/ban
+export const banUser = async (req, res) => {
+    if (!req.body.reason || req.body.reason === "") {
+        res.sendStatus(400);
+        return;
+    }
+
+    const { reason } = req.body;
+    const { userId } = req.params;
+    const currentUserId = req.session.currentUser._id;
+    let errorMessage =
+        "An internal server error occurred while trying to ban this user. ";
+    const [newBanAudit, banAuditError] = await banAuditDao.createBanAudit(
+        userId,
+        currentUserId,
+        reason
+    );
+    if (banAuditError) {
+        res.status(500);
+        res.json({
+            errors: [
+                errorMessage +
+                    "Please try again or contact a site contributor.",
+            ],
+        });
+        return;
+    }
+    const [userBanned, banError] = await userDao.banUser(userId);
+    if (banError) {
+        res.status(500);
+        res.json({
+            errors: [
+                errorMessage +
+                    `Please contact a site admin and consider apologizing to User#${userId}`,
+            ],
+        });
+        return;
+    }
+
+    res.status(200);
+    res.json(newBanAudit);
 };

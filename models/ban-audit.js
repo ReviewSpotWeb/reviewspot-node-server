@@ -18,7 +18,7 @@ export const banAuditSchema = new Schema(
             required: true,
         },
     },
-    { timestamps: { createdAt: 1, updatedAt: -1 } }
+    { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-export const BanAudit = mongoose.model("BanAudit");
+export const BanAudit = mongoose.model("BanAudit", banAuditSchema);

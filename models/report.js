@@ -24,7 +24,7 @@ export const reportSchema = new Schema(
             required: true,
         },
     },
-    { timestamps: 1 }
+    { timestamps: true }
 );
 
 export const Report = mongoose.model("Report", reportSchema);

@@ -14,4 +14,13 @@ const createBanAudit = async (bannedUserId, submittedById, reason) => {
     }
 };
 
-export default { createBanAudit };
+const getBanAuditsByDate = async () => {
+    try {
+        const audits = BanAudit.find().sort({ createdAt: -1 });
+        return [audits, null];
+    } catch (error) {
+        return [null, error];
+    }
+};
+
+export default { createBanAudit, getBanAuditsByDate };
