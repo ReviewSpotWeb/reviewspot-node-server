@@ -4,7 +4,7 @@ import { User } from "../user.js";
 const getUserById = async (userId) => {
     try {
         const user = await User.findById(userId);
-        return [user, error];
+        return [user, null];
     } catch (error) {
         return [null, error];
     }

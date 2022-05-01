@@ -126,8 +126,6 @@ export const searchForAnAlbum = async (req, res) => {
 };
 
 // /api/v1/album/:albumId/reviews
-// TODO: Switch from JSON body to qs params.
-// JSON body should contain a limit and an offset.
 export const getAlbumReviews = async (req, res) => {
     const albumId = req.params.albumId;
 
