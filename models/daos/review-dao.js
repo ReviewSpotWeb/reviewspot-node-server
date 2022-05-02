@@ -107,8 +107,8 @@ const updateReview = async (reviewId, newContent = null, newRating = null) => {
             if (ratingError) throw ratingError;
         }
         let reviewUpdateObject = {};
-        if (newContent) reviewUpdateObject[content] = newContent;
-        if (updatedRating) reviewUpdateObject[rating] = updatedRating;
+        if (newContent) reviewUpdateObject.content = newContent;
+        if (updatedRating) reviewUpdateObject.rating = updatedRating;
         const updatedReview = await Review.findByIdAndUpdate(
             reviewId,
             reviewUpdateObject
