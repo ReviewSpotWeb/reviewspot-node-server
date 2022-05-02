@@ -276,7 +276,7 @@ export const likeAReview = async (req, res) => {
 
     res.status(200);
     res.json({
-        updatedReview: { ...updatedReview, albumName },
+        updatedReview: { ...updatedReview.toObject(), albumName },
     });
 };
 
