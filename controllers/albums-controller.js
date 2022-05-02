@@ -83,10 +83,11 @@ export const getAlbum = async (req, res) => {
     albumId
   );
   const ratingVals = albumRatings.map((r) => r.rating);
+
   const avgRating =
     ratingVals.length >= 0
       ? ratingVals.length > 1
-        ? (ratingVals.reduce((r1, r2) => r1 + r2), 0)
+        ? ratingVals.reduce((prev, curr) => prev + curr, 0) / ratingVals.length
         : ratingVals[0]
       : null;
 
@@ -163,9 +164,11 @@ export const searchForAnAlbum = async (req, res) => {
           if (ratingsError) throw ratingsError;
           const ratingValues = ratings.map((r) => r.rating);
           const avgRating =
-            ratingValues.length > 0
-              ? ratingValues.reduce((r1, r2) => r1 + r2, 0) /
-                ratingValues.length
+            ratingValues.length >= 0
+              ? ratingValues.length > 1
+                ? ratingValues.reduce((prev, curr) => prev + curr, 0) /
+                  ratingValues.length
+                : ratingValues[0]
               : null;
           return { ...album, avgRating, numReviews };
         })
