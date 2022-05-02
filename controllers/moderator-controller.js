@@ -1,3 +1,4 @@
+import { Comment } from "../models/comment.js";
 import banAuditDao from "../models/daos/ban-audit-dao.js";
 import reportDao from "../models/daos/report-dao.js";
 import userDao from "../models/daos/user-dao.js";
@@ -5,6 +6,7 @@ import {
     validateOffsetAndLimit,
     getPageFromModelList,
 } from "../utils/pagination.js";
+import { reportAReview } from "./reviews-controller.js";
 
 // /api/v1/moderator/report/:reportId
 export const dismissAReport = async (req, res) => {
@@ -65,7 +67,19 @@ export const getActiveReports = async (req, res) => {
 
     const pageData = getPageFromModelList(activeReports, offset, limit);
     const { prev, next } = pageData;
-    const reports = pageData.listSlice;
+    const reports = await Promise.all(
+        pageData.listSlice.map(async (report) => {
+            let object = report.toObject();
+            if (report.contentType === "comment") {
+                const splitURI = report.uri.split("/");
+                const commentID = splitURI[splitURI.length - 1];
+                const comment = await Comment.findById(commentID);
+                const commentContent = comment.content;
+                object = { ...object, commentContent };
+            }
+            return object;
+        })
+    );
     res.status(200);
     res.json({ reports, prev, next, total: activeReports.length });
 };
