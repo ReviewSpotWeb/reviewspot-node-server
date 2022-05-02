@@ -57,7 +57,7 @@ const getActiveReports = async () => {
 
 const dismissReport = async (reportId) => {
     try {
-        const reportToDismiss = Report.findByIdAndUpdate(reportId, {
+        const reportToDismiss = await Report.findByIdAndUpdate(reportId, {
             dismissed: true,
         });
     } catch (error) {

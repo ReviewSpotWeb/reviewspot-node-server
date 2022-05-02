@@ -232,6 +232,7 @@ export const editAReview = async (req, res) => {
         return;
     }
 
+    const albumId = req.params.albumId;
     const reviewId = req.params.reviewId;
     const { rating, content } = req.body;
     const [review, error] = await reviewDao.updateReview(
@@ -239,8 +240,9 @@ export const editAReview = async (req, res) => {
         content,
         rating
     );
+    const [albumName, albumNameError] = await getNameFromAlbumId(albumId);
 
-    if (error) {
+    if (error || albumNameError) {
         res.status(500);
         res.json({
             errors: [
@@ -253,7 +255,7 @@ export const editAReview = async (req, res) => {
 
     const updatedReview = await Review.findById(reviewId);
     res.status(200);
-    res.json({ updatedReview });
+    res.json({ updatedReview: { ...updatedReview.toObject(), albumName } });
 };
 
 export const likeAReview = async (req, res) => {

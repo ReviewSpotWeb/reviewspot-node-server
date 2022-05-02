@@ -80,7 +80,14 @@ export const getAlbum = async (req, res) => {
         ],
     };
 
-    let [album, albumError] = await getAlbumData(albumId);
+    const [album, albumError] = await getAlbumData(albumId);
+    const [albumRatings, ratingError] =
+        await ratingDao.findAllRatingsForAlbumId();
+    const ratingVals = albumRatings.map((r) => r.rating);
+    const avgRating =
+        ratingVals.length > 0
+            ? (ratingVals.reduce((r1, r2) => r1 + r2), 0)
+            : null;
     if (albumError) {
         res.status(500);
         res.json(errorJSON);
@@ -105,10 +112,10 @@ export const getAlbum = async (req, res) => {
     if (review) {
         res.json({
             userReview: review,
-            album,
+            album: { ...album, avgRating },
         });
     } else {
-        res.json({ album });
+        res.json({ album: { ...album, avgRating } });
     }
 };
 
