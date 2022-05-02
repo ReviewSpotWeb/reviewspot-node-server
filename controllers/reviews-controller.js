@@ -232,7 +232,7 @@ export const editAReview = async (req, res) => {
 
     const reviewId = req.params.reviewId;
     const { rating, content } = req.body;
-    const [updatedReview, error] = reviewDao.updateReview(
+    const [updatedReview, error] = await reviewDao.updateReview(
         reviewId,
         content,
         rating
