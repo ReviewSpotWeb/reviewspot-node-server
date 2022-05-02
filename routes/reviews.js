@@ -121,11 +121,10 @@ reviewRoutes.delete(
 );
 
 reviewRoutes.post(
-    "/album/:albumId/review/:reviewId/comment/:commentId/report",
+    "/album/:albumId/review/:reviewId/report",
     userMustBeLoggedIn,
     albumIdMustBeValid,
     reviewIdMustBeValid,
-    commentIdMustBeValid,
     reportAReview
 );
 
