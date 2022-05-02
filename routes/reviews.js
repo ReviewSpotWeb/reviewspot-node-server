@@ -61,7 +61,7 @@ reviewRoutes.delete(
     deleteAReview
 );
 reviewRoutes.post(
-    "/album/:albumId/review/:reviewId",
+    "/album/:albumId/review/:reviewId/report",
     userMustBeLoggedIn,
     albumIdMustBeValid,
     reviewIdMustBeValid,
