@@ -1,6 +1,7 @@
 import { AlbumRating } from "../album-rating.js";
 import { Review } from "../review.js";
 import { User } from "../user.js";
+import { Comment } from "../comment.js";
 import ratingDao from "./rating-dao.js";
 
 // NOTE: Because of the potential data size for a reviews's comments,
@@ -128,7 +129,7 @@ const deleteAReview = async (reviewId) => {
     const ratingId = review.rating._id;
     await AlbumRating.deleteOne({ _id: ratingId });
     const result = await Review.findByIdAndDelete(reviewId);
-    await Comment.deleteMany({ reviewId });
+    await Comment.deleteMany({ reviewId: reviewId });
 
     return [result != null, null];
   } catch (error) {
