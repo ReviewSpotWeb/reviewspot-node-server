@@ -148,6 +148,7 @@ export const createAReview = async (req, res) => {
 
     const albumId = req.params.albumId;
     const currentUserId = req.session.currentUser._id;
+    console.log(currentUserId);
     try {
         const ratingWillBeCreated = req.body.rating != null;
         const ratingAlreadyExists = await AlbumRating.exists({
@@ -165,6 +166,7 @@ export const createAReview = async (req, res) => {
             return;
         }
     } catch (error) {
+        console.error(error);
         res.status(500);
         res.json({
             errors: [
@@ -178,18 +180,19 @@ export const createAReview = async (req, res) => {
     const [review, creationError] =
         req.body.rating != null
             ? await reviewDao.createReview(
-                  req.session.currentUser._id,
+                  currentUserId,
                   albumId,
                   req.body.content,
                   req.body.rating
               )
             : await reviewDao.createReview(
-                  req.session.currentUser._id,
+                  currentUserId,
                   albumId,
                   req.body.content
               );
 
     if (creationError) {
+        console.error(creationError);
         res.status(500);
         res.json({
             errors: [
