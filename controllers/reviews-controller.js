@@ -7,6 +7,7 @@ import {
     validateOffsetAndLimit,
 } from "../utils/pagination.js";
 import { getNameFromAlbumId } from "../utils/album-utils.js";
+import { Review } from "../models/review.js";
 
 // api/v1/popularReviews
 export const getPopularReviews = async (_, res) => {
@@ -232,7 +233,7 @@ export const editAReview = async (req, res) => {
 
     const reviewId = req.params.reviewId;
     const { rating, content } = req.body;
-    const [updatedReview, error] = await reviewDao.updateReview(
+    const [review, error] = await reviewDao.updateReview(
         reviewId,
         content,
         rating
@@ -249,6 +250,7 @@ export const editAReview = async (req, res) => {
         return;
     }
 
+    const updatedReview = await Review.findById(reviewId);
     res.status(200);
     res.json({ updatedReview });
 };
