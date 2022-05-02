@@ -256,12 +256,14 @@ export const editAReview = async (req, res) => {
 export const likeAReview = async (req, res) => {
     const userId = req.session.currentUser._id;
     const reviewId = req.params.reviewId;
+    const albumId = req.params.albumId;
 
     const [updatedReview, error] = await reviewDao.likeAReview(
         userId,
         reviewId
     );
-    if (error || !updatedReview) {
+    const [albumName, albumNameError] = await getNameFromAlbumId(albumId);
+    if (error || !updatedReview || albumNameError) {
         res.status(500);
         res.json({
             errors: [
@@ -274,7 +276,7 @@ export const likeAReview = async (req, res) => {
 
     res.status(200);
     res.json({
-        updatedReview,
+        updatedReview: { ...updatedReview, albumName },
     });
 };
 
