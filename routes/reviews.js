@@ -126,7 +126,7 @@ reviewRoutes.post(
     albumIdMustBeValid,
     reviewIdMustBeValid,
     commentIdMustBeValid,
-    reportAComment
+    reportAReview
 );
 
 export default reviewRoutes;

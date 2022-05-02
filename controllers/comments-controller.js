@@ -1,5 +1,6 @@
 import commentDao from "../models/daos/comment-dao.js";
 import reportDao from "../models/daos/report-dao.js";
+import { getNameFromAlbumId } from "../utils/album-utils.js";
 
 // /api/v1/album/:albumId/review/:reviewId/
 export const postCommentOnReview = async (req, res) => {
@@ -37,16 +38,18 @@ export const editACommentOnReview = async (req, res) => {
         res.sendStatus(400);
     }
 
+    const albumId = req.params.albumId;
     const reviewId = req.params.reviewId;
     const commentId = req.params.commentId;
     const newContent = req.body.content;
 
-    const [updatedComment, error] = await commentDao.editComment(
+    const [updatedComment, commentError] = await commentDao.editComment(
         reviewId,
         commentId,
         newContent
     );
-    if (error) {
+    const [albumName, albumNameError] = await getNameFromAlbumId(albumId);
+    if (error || albumNameError) {
         console.error(error);
         res.status(500);
         res.json({
@@ -60,7 +63,7 @@ export const editACommentOnReview = async (req, res) => {
 
     res.status(200);
     res.json({
-        comment: updatedComment,
+        comment: { ...updatedComment.toObject(), albumName },
     });
 };
 
@@ -108,7 +111,7 @@ export const reportAComment = async (req, res) => {
     const { albumId, reviewId, commentId } = req.params;
     const { reason } = req.body;
     const currentUserId = req.session.currentUser._id;
-    const [report, error] = reportDao.createCommentReport(
+    const [report, error] = await reportDao.createCommentReport(
         currentUserId,
         reason,
         albumId,

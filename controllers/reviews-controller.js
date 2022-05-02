@@ -1,6 +1,7 @@
 import { AlbumRating } from "../models/album-rating.js";
 import commentDao from "../models/daos/comment-dao.js";
 import reviewDao from "../models/daos/review-dao.js";
+import reportDao from "../models/daos/report-dao.js";
 import { getAlbumData } from "../services/spotify/spotify-album-service.js";
 import {
     getPageFromModelList,
@@ -290,7 +291,7 @@ export const reportAReview = async (req, res) => {
     const { albumId, reviewId } = req.params;
     const { reason } = req.body;
     const currentUserId = req.session.currentUser._id;
-    const [report, error] = reportDao.createReviewReport(
+    const [report, error] = await reportDao.createReviewReport(
         currentUserId,
         reason,
         albumId,
