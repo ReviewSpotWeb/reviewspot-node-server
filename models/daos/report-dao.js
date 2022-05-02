@@ -60,6 +60,7 @@ const dismissReport = async (reportId) => {
         const reportToDismiss = await Report.findByIdAndUpdate(reportId, {
             dismissed: true,
         });
+        return [reportToDismiss, null];
     } catch (error) {
         return [null, error];
     }
