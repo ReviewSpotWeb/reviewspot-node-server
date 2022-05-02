@@ -206,7 +206,6 @@ export const deleteAReview = async (req, res) => {
   const reviewId = req.params.reviewId;
   const [successFullyDeleted, error] = await reviewDao.deleteAReview(reviewId);
   if (error || !successFullyDeleted) {
-    console.log(successFullyDeleted);
     res.status(500);
     res.json({
       errors: [
