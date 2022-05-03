@@ -1,4 +1,6 @@
+import { Comment } from "../comment.js";
 import { Report } from "../report.js";
+import { Review } from "../review.js";
 
 // These two could easily just be a single createReport function with overloads,
 // however I wanted to be explicit.
@@ -10,11 +12,14 @@ const createCommentReport = async (
     commentId
 ) => {
     try {
+        const comment = await Comment.findById(commentId);
+        const authorId = comment.authorInfo.authorId;
         const uri = `/album/${albumId}/review/${reviewId}/comment/${commentId}`;
         const existingReport = await Report.exists({ uri, submittedBy });
         if (existingReport) return [existingReport, null];
         const newReport = new Report({
             submittedBy,
+            authorId,
             reason,
             uri,
             contentType: "comment",
@@ -28,6 +33,8 @@ const createCommentReport = async (
 
 const createReviewReport = async (submittedBy, reason, albumId, reviewId) => {
     try {
+        const review = await Review.findById(reviewId);
+        const authorId = review.authorInfo.authorId;
         const uri = `/album/${albumId}/review/${reviewId}`;
         const existingReport = await Report.exists({ uri, submittedBy });
         if (existingReport) return [existingReport, null];
@@ -36,6 +43,7 @@ const createReviewReport = async (submittedBy, reason, albumId, reviewId) => {
             reason,
             uri,
             contentType: "review",
+            authorId,
         });
         await newReport.save();
         return [newReport, null];

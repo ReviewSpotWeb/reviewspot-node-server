@@ -125,9 +125,10 @@ export const commentIdMustBeValid = async (req, res, next) => {
     }
 };
 
-export const userMustOwnComment = async (req, res, next) => {
+export const userMustOwnCommentOrBeMod = async (req, res, next) => {
     const commentId = req.params.commentId;
     const userId = req.session.currentUser._id;
+    const userRole = req.session.currentUser.role;
     const [userIsOwner, error] = await commentDao.userOwnsComment(
         userId,
         commentId
@@ -140,7 +141,7 @@ export const userMustOwnComment = async (req, res, next) => {
                     "Please contact a site contributor.",
             ],
         });
-    } else if (userIsOwner) {
+    } else if (userIsOwner || userRole === "moderator") {
         next();
     } else {
         res.status(403);

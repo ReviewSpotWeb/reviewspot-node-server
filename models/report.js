@@ -23,6 +23,11 @@ export const reportSchema = new Schema(
             enum: ["comment", "review"],
             required: true,
         },
+        authorId: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
     },
     { timestamps: true }
 );
