@@ -23,7 +23,9 @@ import {
     reviewCannotAlreadyExist,
     reviewIdMustBeValid,
     userMustOwnComment,
+    userMustOwnCommentOrBeMod,
     userMustOwnReview,
+    userMustOwnReviewOrBeMod,
 } from "../middleware/general-resources.js";
 const reviewRoutes = Router();
 
@@ -57,7 +59,7 @@ reviewRoutes.delete(
     userMustBeLoggedIn,
     albumIdMustBeValid,
     reviewIdMustBeValid,
-    userMustOwnReview,
+    userMustOwnReviewOrBeMod,
     deleteAReview
 );
 reviewRoutes.post(
@@ -116,7 +118,7 @@ reviewRoutes.delete(
     albumIdMustBeValid,
     reviewIdMustBeValid,
     commentIdMustBeValid,
-    userMustOwnComment,
+    userMustOwnCommentOrBeMod,
     deleteACommentOnReview
 );
 

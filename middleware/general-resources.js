@@ -38,6 +38,33 @@ export const userMustOwnReview = async (req, res, next) => {
     }
 };
 
+export const userMustOwnReviewOrBeMod = async (req, res, next) => {
+    const userId = req.session.currentUser._id;
+    const userRole = req.session.currentUser._id;
+    const reviewId = req.params.reviewId;
+    const [userDoesOwn, error] = await reviewDao.userOwnsReview(
+        userId,
+        reviewId
+    );
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error has occurred while trying to retrieve this review.",
+            ],
+        });
+    } else if (userDoesOwn || userRole === "moderator") {
+        next();
+    } else {
+        res.status(403);
+        res.json({
+            errors: [
+                "You do not have permission to make changes to this review.",
+            ],
+        });
+    }
+};
+
 export const albumIdMustBeValid = async (req, res, next) => {
     const albumId = req.params.albumId;
     const [data, error] = await getAlbumData(albumId);
@@ -142,6 +169,33 @@ export const userMustOwnCommentOrBeMod = async (req, res, next) => {
             ],
         });
     } else if (userIsOwner || userRole === "moderator") {
+        next();
+    } else {
+        res.status(403);
+        res.json({
+            errors: [
+                "You do not have sufficient permission to make changes to this comment.",
+            ],
+        });
+    }
+};
+
+export const userMustOwnComment = async (req, res, next) => {
+    const commentId = req.params.commentId;
+    const userId = req.session.currentUser._id;
+    const [userIsOwner, error] = await commentDao.userOwnsComment(
+        userId,
+        commentId
+    );
+    if (error) {
+        res.status(500);
+        res.json({
+            errors: [
+                "An internal server error occurred while trying to get comment data." +
+                    "Please contact a site contributor.",
+            ],
+        });
+    } else if (userIsOwner) {
         next();
     } else {
         res.status(403);
