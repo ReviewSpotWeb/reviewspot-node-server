@@ -6,11 +6,11 @@ import axios from "axios";
 // This function returns a pair of (data, error). On success, the function will return
 // (data, null), and on error
 export const getDataFromRequest = async (requestOptions) => {
-    try {
-        const response = await axios(requestOptions);
-        const data = response.data;
-        return [data, null];
-    } catch (error) {
-        return [null, error];
-    }
+  try {
+    const response = await axios(requestOptions);
+    const data = response.data;
+    return [data, null];
+  } catch (error) {
+    return [null, error];
+  }
 };
