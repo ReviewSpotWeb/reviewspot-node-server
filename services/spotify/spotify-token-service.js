@@ -43,7 +43,7 @@ export const getSpotifyToken = async () => {
       return [null, "Something went wrong when requesting Spotify Token"];
 
     const tokenData = response.data;
-    console.log(tokenData);
+
     // Expires In is computed as seconds.
     const expiresAt = moment().add(tokenData["expires_in"], "seconds").toDate();
 

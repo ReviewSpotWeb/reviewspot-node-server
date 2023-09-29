@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import express from "express";
+import axios from "axios";
 import cors from "cors";
 import { db, getDBConnectionString } from "./db.js";
 import session from "express-session";
@@ -41,18 +42,20 @@ const sessionStore = MongoDBStore({
   collection: "user_sessions",
 });
 
+app.set("trust proxy", 1);
 app.use(
   session({
     secret: process.env.APP_SECRET || "secret",
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7, // Calculation for 1 week.
-      secure: (process.env.NODE_ENV || "DEV").toLowerCase() === "prod",
-      sameSite: "none",
-      httpOnly: true,
-    },
-    store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
+    cookie: {
+      secure: (process.env.NODE_ENV || "DEV").toLowerCase() === "prod",
+      // sameSite: "none", // defaults to null
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // Calculation for 1 week.
+    },
+    store: sessionStore,
   })
 );
 
