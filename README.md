@@ -14,3 +14,11 @@ This project is for a Computer Science course in which myself and my partner Eli
 Furthermore, it is entirely possible we will archive this repository (and subsequent ones) at the end of this semester such that we can allocate our time towards other projects.
 
 We appreciate your enthusiasm, and will update the documentation in this repository if the time comes to open it up to outside contributors.
+
+## Startup
+
+npm install
+
+Start MongoDB server
+
+npm run dev
