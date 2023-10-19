@@ -28,7 +28,7 @@ dotenv.config();
 app.use(
   cors({
     origin:
-      (process.env.NODE_ENV || "DEV").toLowerCase() === "prod"
+      (process.env.NODE_ENV || "DEV").toLowerCase() === "production"
         ? process.env.REVIEWSPOT_CLIENT_URL
         : "http://localhost:3000",
     credentials: true,
