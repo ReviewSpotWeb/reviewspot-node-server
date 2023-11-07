@@ -224,16 +224,9 @@ export const reviewCannotAlreadyExist = async (req, res, next) => {
 
 export const userIdMustBeValid = async (req, res, next) => {
   const userId = req.params.userId;
-  if (!mongoose.isValidObjectId(userId)) {
-    res.status(400);
-    res.json({
-      errors: ["The given user ID is not a valid instance of an object ID."],
-    });
-    return;
-  }
 
   try {
-    const userExists = await User.exists({ _id: userId });
+    const userExists = await User.exists({ username: userId });
     if (!userExists) {
       res.status(404);
       res.json({

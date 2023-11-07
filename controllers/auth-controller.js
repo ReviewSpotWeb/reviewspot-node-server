@@ -84,8 +84,6 @@ export const login = async (req, res) => {
   try {
     req.session.currentUser = userToLogIn;
     await req.session.save();
-    // console.log("ON LOGIN");
-    // console.log(req.session);
   } catch (error) {
     res.status(500);
     res.json({
@@ -177,8 +175,6 @@ export const signUp = async (req, res) => {
 
 export const isLoggedIn = (req, res) => {
   const currentUser = req.session.currentUser;
-  //   console.log("ON IS LOGGED IN");
-  //   console.log(req.session);
   if (currentUser) {
     const { username, _id, role } = currentUser;
     res.json({

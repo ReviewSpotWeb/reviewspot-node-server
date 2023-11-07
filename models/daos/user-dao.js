@@ -12,6 +12,15 @@ const getUserById = async (userId) => {
   }
 };
 
+const getUserByUsername = async (username) => {
+  try {
+    const user = await User.findOne({ username: username });
+    return [user, null];
+  } catch (error) {
+    return [null, error];
+  }
+};
+
 const getUserStats = async (userId) => {
   try {
     const numComments = await Comment.count({
@@ -74,6 +83,7 @@ const banUser = async (userId) => {
 
 export default {
   getUserById,
+  getUserByUsername,
   getUserStats,
   updateUserBio,
   banUser,

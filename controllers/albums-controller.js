@@ -56,7 +56,6 @@ export const getUserNewReleases = async (req, res) => {
       ),
     };
   } catch (error) {
-    console.error(error);
     res.status(500);
     res.json({
       errors: [errorMsg],
@@ -136,7 +135,6 @@ export const searchForAnAlbum = async (req, res) => {
   const { q, limit, offset } = req.query;
   let [data, error] = await searchForAlbum(q, limit, offset);
   if (error && error.response.status < 500) {
-    console.error(error);
     res.status(400);
     res.json({
       errors: ["Please ensure your limit and offset values are correct."],
@@ -283,7 +281,6 @@ export const getAverageRating = async (req, res) => {
 // /api/v1/album/:albumId/rate
 export const rateAlbum = async (req, res) => {
   if (!req.body.rating) {
-    console.log(req.body);
     res.sendStatus(400);
     return;
   }
