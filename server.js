@@ -49,8 +49,8 @@ app.use(
     saveUninitialized: false,
     proxy: true,
     cookie: {
-      secure: (process.env.NODE_ENV || "DEV").toLowerCase() === "prod",
-      // sameSite: "none", // defaults to null
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // defaults to null
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // Calculation for 1 week.
     },
