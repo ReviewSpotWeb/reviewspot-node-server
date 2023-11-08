@@ -5,6 +5,7 @@ import {
   getNewReleases,
   searchForAlbum,
 } from "../services/spotify/spotify-album-service.js";
+import { getAlbumsFromAlbumIdList } from "../utils/album-utils.js";
 import {
   getPageFromModelList,
   validateOffsetAndLimit,
@@ -36,6 +37,15 @@ export const getUserNewReleases = async (req, res) => {
   }
 
   try {
+    // For some reason newReleases doesn't give spotify popularity so we have to do this
+    const albumIds = newReleasesData.albums.map((album) => album.id);
+    const [albums, albumsError] = await getAlbumsFromAlbumIdList(albumIds);
+    if (albumsError) throw albumsError;
+    const albumId2Album = {};
+    albums.albums.forEach((album) => {
+      albumId2Album[album.id] = album;
+    });
+
     newReleasesData = {
       ...newReleasesData,
       albums: await Promise.all(
@@ -51,7 +61,7 @@ export const getUserNewReleases = async (req, res) => {
             ratings.length > 0
               ? ratingValues.reduce((r1, r2) => r1 + r2, 0) / ratings.length
               : null;
-          return { ...album, numReviews, avgRating };
+          return { ...albumId2Album[album.id], numReviews, avgRating };
         })
       ),
     };
@@ -62,7 +72,6 @@ export const getUserNewReleases = async (req, res) => {
     });
     return;
   }
-
   res.status(200);
   res.json(newReleasesData);
 };
@@ -150,6 +159,15 @@ export const searchForAnAlbum = async (req, res) => {
 
   let searchData;
   try {
+    // For some reason newReleases doesn't give spotify popularity so we have to do this
+    const albumIds = data.albums.map((album) => album.id);
+    const [albums, albumsError] = await getAlbumsFromAlbumIdList(albumIds);
+    if (albumsError) throw albumsError;
+    const albumId2Album = {};
+    albums.albums.forEach((album) => {
+      albumId2Album[album.id] = album;
+    });
+
     searchData = {
       // https://stackoverflow.com/questions/40140149/use-async-await-with-array-map
       albums: await Promise.all(
@@ -168,7 +186,7 @@ export const searchForAnAlbum = async (req, res) => {
                   ratingValues.length
                 : ratingValues[0]
               : null;
-          return { ...album, avgRating, numReviews };
+          return { ...albumId2Album[album.id], avgRating, numReviews };
         })
       ),
       limit: data.limit,

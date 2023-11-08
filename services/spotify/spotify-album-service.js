@@ -16,6 +16,22 @@ export const getAlbumData = async (albumId) => {
   const [data, error] = await getDataFromRequest(albumRequestOptions);
   return [data, error];
 };
+export const getBatchAlbumData = async (albumIds) => {
+  const [spotifyToken, tokenError] = await getSpotifyToken();
+  if (tokenError) return [null, tokenError];
+  const albumRequestOptions = {
+    method: "get",
+    url: "https://api.spotify.com/v1/albums",
+    params: {
+      ids: albumIds.join(","),
+    },
+    headers: {
+      Authorization: `${spotifyToken.tokenType} ${spotifyToken.accessToken}`,
+    },
+  };
+  const [data, error] = await getDataFromRequest(albumRequestOptions);
+  return [data, error];
+};
 
 // Limit is the maximum number of results to send back.
 // Offset is the index of the groups of results to get back.
@@ -42,7 +58,6 @@ export const searchForAlbum = async (searchQuery, limit = 10, offset = 0) => {
   const [data, error] = await getDataFromRequest(searchRequestOptions);
   if (error) return [null, error];
   const albumData = data.albums;
-  console.log(albumData);
   // https://developer.spotify.com/documentation/web-api/reference/#/operations/search
   const [total, nextURL, prevURL, albums, resOffset, resLimit] = [
     albumData.total,

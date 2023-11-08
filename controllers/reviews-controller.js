@@ -7,7 +7,10 @@ import {
   getPageFromModelList,
   validateOffsetAndLimit,
 } from "../utils/pagination.js";
-import { getNameFromAlbumId } from "../utils/album-utils.js";
+import {
+  getNameFromAlbumId,
+  getAlbumsFromAlbumIdList,
+} from "../utils/album-utils.js";
 import { Review } from "../models/review.js";
 
 // api/v1/popularReviews
@@ -23,25 +26,29 @@ export const getPopularReviews = async (_, res) => {
     });
     return;
   }
-
+  const allAlbumIds = popularReviews.map((review) => review.albumId);
+  const albumIds = Array.from(new Set(allAlbumIds));
   try {
-    popularReviews = await Promise.all(
-      popularReviews.map(async (review) => {
-        const albumId = review.albumId;
-        const [albumName, albumNameError] = await getNameFromAlbumId(albumId);
-        if (albumNameError) throw albumNameError;
-        return { ...review, albumName };
-      })
-    );
+    const [albums, albumsError] = await getAlbumsFromAlbumIdList(albumIds);
+    if (albumsError) throw albumsError;
+    // Merge album with review
+    const albumId2Album = {};
+    albums.albums.forEach((album) => {
+      albumId2Album[album.id] = album;
+    });
+    popularReviews = popularReviews.map((review) => {
+      return {
+        review: { ...review },
+        album: albumId2Album[review.albumId],
+      };
+    });
   } catch (error) {
-    console.error(error);
     res.status(500);
     res.json({
       errors: [serverErrorMsg],
     });
     return;
   }
-
   res.status(200);
   res.json(popularReviews);
 };
@@ -143,10 +150,8 @@ export const createAReview = async (req, res) => {
     res.sendStatus(400);
     return;
   }
-
   const albumId = req.params.albumId;
   const currentUserId = req.session.currentUser._id;
-  console.log(currentUserId);
   try {
     const ratingWillBeCreated = req.body.rating != null;
     const ratingAlreadyExists = await AlbumRating.exists({

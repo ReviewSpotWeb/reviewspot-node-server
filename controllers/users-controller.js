@@ -12,7 +12,6 @@ export const getProfileInfo = async (req, res) => {
   const [userInfo, userInfoError] = await userDao.getUserByUsername(userId);
   const [userStats, userStatsError] = await userDao.getUserStats(userInfo._id);
   if (userInfoError || userStatsError) {
-    console.log(userStatsError);
     res.status(500);
     res.json({
       errors: [
@@ -74,7 +73,7 @@ export const getUsersReviews = async (req, res) => {
 
   const { userId } = req.params;
   const { limit, offset } = req.query;
-  const [userReviews, error] = await reviewDao.findAllReviewsByUserId(userId);
+  const [userReviews, error] = await reviewDao.findAllReviewsByUsername(userId);
   if (error) {
     res.status(500);
     res.json({

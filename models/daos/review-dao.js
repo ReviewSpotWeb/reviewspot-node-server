@@ -28,10 +28,10 @@ const findOneReviewById = async (id) => {
   }
 };
 
-const findAllReviewsByUserId = async (userId) => {
+const findAllReviewsByUsername = async (username) => {
   try {
     const reviews = await Review.find({
-      "authorInfo.authorId": userId,
+      "authorInfo.authorName": username,
     }).sort({ createdAt: -1 });
     return reviews ? [reviews, null] : [[], null];
   } catch (error) {
@@ -206,7 +206,7 @@ export default {
   findReviewsByAlbumId,
   findOneReviewById,
   getReviewByUserIdAndAlbumId,
-  findAllReviewsByUserId,
+  findAllReviewsByUsername,
   createReview,
   updateReview,
   deleteAReview,
