@@ -58,7 +58,20 @@ export const userMustOwnReviewOrBeMod = async (req, res, next) => {
 export const albumIdMustBeValid = async (req, res, next) => {
   const albumId = req.params.albumId;
   const [data, error] = await getAlbumData(albumId);
-  if (error && error.response.error.message == "invalid id") {
+  if (error) {
+    res.status(500);
+    res.json({
+      errors: [
+        "An internal server error has occured while attempting to grab the data on this album. " +
+          "Please contact a site contributor.",
+      ],
+    });
+  } else {
+    next();
+  }
+  // TODO: Figure out error object shape
+  /*
+  if (error && error.response.data.error.message == "invalid id") {
     res.status(404);
     res.json({
       errors: ["The given album ID does not belong to any Spotify album."],
@@ -74,6 +87,7 @@ export const albumIdMustBeValid = async (req, res, next) => {
   } else {
     next();
   }
+  */
 };
 
 export const reviewIdMustBeValid = async (req, res, next) => {
@@ -224,16 +238,8 @@ export const reviewCannotAlreadyExist = async (req, res, next) => {
 
 export const userIdMustBeValid = async (req, res, next) => {
   const userId = req.params.userId;
-  if (!mongoose.isValidObjectId(userId)) {
-    res.status(400);
-    res.json({
-      errors: ["The given user ID is not a valid instance of an object ID."],
-    });
-    return;
-  }
-
   try {
-    const userExists = await User.exists({ _id: userId });
+    const userExists = await User.exists({ username: userId });
     if (!userExists) {
       res.status(404);
       res.json({
